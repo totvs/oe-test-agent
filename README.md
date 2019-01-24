@@ -23,6 +23,7 @@ npm i oe-test-agent
 # Changelog
 
 - **1.0.1**: Documentation.
+- **1.0.2**: README.md changes.
 
 
 # Want to help?
