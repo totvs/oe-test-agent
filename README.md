@@ -12,7 +12,7 @@
 
 The **OE Test Agent** was developed in order to make our e2e test for OpenEdge applications easier.
 
-As our dev team was already familiar with **Protractor**, we took advantage of that to create this project, using only *socket* communication, between JavaScript and OE, and an external tool - also created by us - called ["Robot"](#robot.exe).
+Our dev team was already familiar with **Protractor**, so we took advantage of that to create this project using only *socket* communication between JavaScript and OE and an external tool - also created by us - called ["Robot"](#robot.exe).
 
 # Installation
 
@@ -27,27 +27,27 @@ npm i oe-test-agent
 
 # Want to help?
 
-You're welcome to open a issue with bugs and improvements on this GitHub or to make us a PR.
+You're welcome to open an issue to report bugs, suggest improvements on this GitHub or to submit a PR.
 
 
 # Other tools
 
-In order to make this project to work with all kind of Progress OpenEdge applications, besides the *socket* communication, we needed to build an auxiliar tool that we decided to call "Robot".
+In order to make this project work with all kinds of Progress OpenEdge applications, besides the *socket* communication, we had to build an auxiliary tool that we decided to call "Robot".
 
 ## Robot.exe
 
-If you are familiar with Progress OE applications, you probably know that visual messages - with ```VIEW-AS ALERT-BOX``` attributes - block all other execution until the user closes the current opened message.
+If you are familiar with Progress OE applications, you probably know that visual messages - with ```VIEW-AS ALERT-BOX``` attributes - block every other execution until the user closes the current message.
 
-To solve that we create "Robot.exe", this tool - built using ["Auto It"](https://www.autoitscript.com) - simulates a mouse click to the opened message and also can send keyboard events to any other Windows opened application.
+To solve that, we created "Robot.exe". This tool - built using ["Auto It"](https://www.autoitscript.com) - simulates a mouse click to the opened message and can also send keyboard events to any other Windows application that is currently open.
 
-> **Heads up!** You may need to sign "Robot.exe" with a valid certificate or put it on your antivirus whitelist.
+> **Heads up!** You may need to sign "Robot.exe" with a valid certificate or add it to your antivirus whitelist.
 
 
 # Sample Test
 
-> At this point we assume that you've already did a ```npm install``` command for this project.
+> At this point we assume that you've already did an ```npm install``` command for this project.
 
-To test our sample, first you need to download both ZIP files available [here](https://community.progress.com/community_groups/openedge_general/w/openedgegeneral/1162.download-11-0-documentation-example-procedure-and-sample-files). Create a folder called "ABL" and extract the examples in the "examples" folder and the samples in the "samples" folder, both of them inside "ABL". In our case the "ABL" folder is available at C:\\, but your structure should be similar as bellow:
+To test our sample, first you need to download both ZIP files available [here](https://community.progress.com/community_groups/openedge_general/w/openedgegeneral/1162.download-11-0-documentation-example-procedure-and-sample-files). Then, create a folder called "ABL" and extract the examples in the "examples" folder and the samples in the "samples" folder, both of them inside "ABL". In our case the "ABL" folder is available at C:\\, but your structure should be similar as bellow:
 
 ```bash
 C:\
