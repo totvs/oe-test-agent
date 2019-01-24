@@ -1,6 +1,6 @@
 {
   "name": "oe-test-agent",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Progress utility for e2e tests with Protractor",
   "main": "./dist/src/index.js",
   "scripts": {
