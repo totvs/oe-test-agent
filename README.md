@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./resources/oe_test_agent_logo.png" width="500" height="200">
+  <img src="https://raw.githubusercontent.com/totvs/oe-test-agent/master/resources/oe_test_agent_logo.png" width="500" height="200">
 </p>
 
 <h3 align="center">OE Test Agent</h3>
@@ -70,4 +70,4 @@ Inside the "ABL" folder, create a parameter file ```progress.pf``` with the cont
 
 In a command line prompt, navigate to the ```test``` folder inside the ```oe-test-agent``` project and type: ```npm run test```. If everything is correct, your test should start and run without any problems.
 
-![npm-test](./resources/npm-test.gif "npm test")
+![npm-test](https://raw.githubusercontent.com/totvs/oe-test-agent/master/resources/npm-test.gif "npm test")
