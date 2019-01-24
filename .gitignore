@@ -1,5 +1,8 @@
 **/.vscode/
 **/node_modules/
 **/*.log
+**/src/**/*.js
+**/src/**/*.r
+**/src/**/*.exe
 **/test/*.js
 **/test/*.d.ts
