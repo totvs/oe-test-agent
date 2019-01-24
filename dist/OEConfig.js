@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0});class OEConfig{constructor(){this.propath=[],this.startupFileParams=[],this.inputCodepage="UTF-8"}}exports.OEConfig=OEConfig;
