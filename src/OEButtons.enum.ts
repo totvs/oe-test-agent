@@ -1,3 +1,6 @@
+/**
+ * Progress OpenEdge Alert-Box Buttons.
+ */
 export enum OEButtons {
   'OK' = 'OK',
   'YES' = 'YES',

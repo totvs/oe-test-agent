@@ -1,5 +1,5 @@
 /**
- * ```OE Test Agent``` configuration class.
+ * ```OE Test Agent``` configuration.
  */
 export class OEConfig {
   /**

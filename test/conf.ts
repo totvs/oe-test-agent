@@ -1,6 +1,6 @@
 import { Config } from "protractor";
 
-export let config: Config = {
+export const config: Config = {
   directConnect: true,
-  specs: ['**.spec.js']
+  specs: ['*.spec.js']
 };

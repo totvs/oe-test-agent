@@ -1,3 +1,6 @@
+/**
+ * Progress OpenEdge Attributes.
+ */
 export enum OEAttributes {
   CHECKED = 'CHECKED',
   IMAGEUP = 'IMAGE-UP',

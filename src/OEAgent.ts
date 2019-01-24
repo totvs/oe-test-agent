@@ -6,25 +6,23 @@ import { OEButtons } from './OEButtons.enum';
 import { OEConfig } from './OEConfig';
 import { OEElement } from './OEElement';
 import { OEEvents } from './OEEvents.enum';
-import { OEResultConn, OEResultData, OESocket } from './OESocket';
+import { OESocket } from './OESocket';
 import { MessageType, OEUtils } from './OEUtils';
 
 /**
- * Provides a communication link between Protractor and OpenEdge applications
- * for e2e tests. An ```OE Test Agent``` application will be executed to create
- * the integration tools, using socket communication.
+ * Provides the interaction between the e2e Protractor tests and
+ * Progress OpenEdge applications.
  */
 export class OEAgent {
   constructor(private oeSocket = new OESocket()) {}
 
   /**
-   * Start the agent with the informed configuration.
-   * This is the main method and has to be called before any other methods.
+   * Starts the agent application.
    *
-   * @param config Configuration object with the initialization parameters.
+   * @param config Configuration object.
    * @returns A promise result of the agent initialization and connection.
    */
-  public start(config: OEConfig): OEResultConn {
+  public start(config: OEConfig): promise.Promise<boolean | Error> {
     return browser.call(() => {
       const cmd = this.buildCommandLine(config);
       const cwd = `${__dirname.replace(/\\/g, '/')}/abl/`;
@@ -34,7 +32,7 @@ export class OEAgent {
 
       const run = exec(cmd, { cwd: cwd });
 
-      // Will use "race" to guess if OpenEdge has been successfully opened.
+      // Will use "race" to guess if Progress OE has been successfully opened.
       // This is not a 100% guarantee thing.
       const suc = new Promise((resolve) => setTimeout(() => resolve({ status: true }), 5 * 1000));
       const err = new Promise((resolve) => run.on('error', (error: Error) => resolve({ status: false, error: error })));
@@ -46,101 +44,69 @@ export class OEAgent {
   }
 
   /**
-   * Establish a connection with OE Test Agent server.
+   * Connects to the agent server.
    *
    * @param host Agent server host name or IP address.
    * @param port Agent server port number.
    */
-  public connect(host: string, port: number): OEResultConn {
+  public connect(host: string, port: number): promise.Promise<boolean | Error> {
     return browser.call(() => this.oeSocket.connect(host, port));
   }
 
+  /**
+   * Returns the agent server connection status.
+   * @returns ```true``` if the agent server is connected.
+   */
   public connected(): boolean {
     return this.oeSocket.connected();
   }
 
   /**
-   * Search for an OE window widget with the informed title.
-   *
-   * @param title OE window title (full or partial).
-   * @returns Window widget ```OEElement``` instance.
-   */
-  public findWindow(title: string): OEElement {
-    const element: OEElement = new OEElement(this);
-
-    browser.call(() => this.oeSocket.send(true, true, 'FINDWINDOW', title).then((id: string) => (element.id = parseInt(id))));
-
-    return element;
-  }
-
-  /**
-   * Wait until an OE window widget with the informed title is found or a
-   * timeout error is raised.
+   * Waits until an OE window with the informed title is found or a timeout
+   * error is raised.
    *
    * @param title OE window title (full or partial).
    * @param timeout Waiting timeout.
    *
-   * @returns Window widget ```OEElement``` instance.
+   * @returns Window ```OEElement``` instance.
    */
   public waitForWindow(title: string, timeout = 10000): OEElement {
     const element = new OEElement(this);
 
     browser.wait(() => {
-      return this.oeSocket.send(false, true, 'FINDWINDOW', title)
-        .then((id: string) => (element.id = parseInt(id))).catch(() => browser.sleep(2000));
+      return this.oeSocket.send(true, 'FINDWINDOW', title)
+        .then((id: string) => element.id = parseInt(id));
     }, timeout);
 
     return element;
   }
 
   /**
-   * Search for an OE widget with the informed name attribute.
+   * Searches for an OE window with the informed title.
    *
-   * @param name Widget ```NAME``` attribute.
-   * @param visible ```true``` to only search visible elements.
-   * @param parent Parent ```OEElement``` instance, if informed the agent
-   * will consider a search only by the parent's children widgets.
-   *
-   * @returns Widget ```OEElement``` instance.
+   * @param title OE window title (full or partial).
+   * @returns Window ```OEElement``` instance.
    */
-  public findElement(name: string, visible = true, parent?: OEElement): OEElement {
-    const element = new OEElement(this);
-    const parentId = parent ? parent.id : '';
+  public findWindow(title: string): OEElement {
+    const element: OEElement = new OEElement(this);
 
-    browser.call(() => this.oeSocket.send(true, true, 'FINDELEMENT', name, visible, parentId).then((id: string) => (element.id = parseInt(id))));
+    browser.call(() => {
+      return this.oeSocket.send(true, 'FINDWINDOW', title)
+        .then((id: string) => (element.id = parseInt(id)));
+    });
 
     return element;
   }
 
   /**
-   * Search for an OE widget considering the value of the informed attribute.
-   *
-   * @param attr Attribute name.
-   * @param value Attribute value.
-   * @param visible ```true``` to only search visible elements.
-   * @param parent Parent ```OEElement``` instance, if informed the agent
-   * will consider a search only by the parent's children widgets.
-   *
-   * @returns Widget ```OEElement``` instance.
-   */
-  public findElementByAttribute(attribute: OEAttributes, value: string, visible = true, parent?: OEElement): OEElement {
-    const element = new OEElement(this);
-    const parentId = parent ? parent.id : '';
-
-    browser.call(() => this.oeSocket.send(true, true, 'FINDELEMENTBYATTRIBUTE', attribute, value, visible, parentId).then((id: string) => (element.id = parseInt(id))));
-
-    return element;
-  }
-
-  /**
-   * Wait until an OE widget is found with the informed name or a timeout
-   * error is raised.
+   * Wait until an OE widget is found with the informed name attribute or a
+   * timeout error is raised.
    *
    * @param name Widget ```NAME``` attribute.
+   * @param visible ```true``` to only search visible elements.
    * @param timeout Waiting timeout.
-   * @param visible ```true``` to only search visible elements.
    * @param parent Parent ```OEElement``` instance, if informed the agent
-   * will consider a search only by the parent's children widgets.
+   * will consider a search only by its children.
    *
    * @returns Widget ```OEElement``` instance.
    */
@@ -149,7 +115,7 @@ export class OEAgent {
     const parentId = parent ? parent.id : '';
 
     browser.wait(() => {
-      return this.oeSocket.send(false, true, 'FINDELEMENT', name, visible, parentId)
+      return this.oeSocket.send(true, 'FINDELEMENT', name, visible, parentId)
         .then((id: string) => (element.id = parseInt(id))).catch(() => browser.sleep(2000));
     }, timeout);
 
@@ -157,127 +123,175 @@ export class OEAgent {
   }
 
   /**
-   * Get an attribute value of the informed element.
+   * Searches for an OE widget with the informed name attribute.
    *
-   * @param element Widget ```OEElement``` instance.
-   * @param attr Attribute name.
+   * @param name Widget ```NAME``` attribute.
+   * @param visible ```true``` to only search visible elements.
+   * @param parent Parent ```OEElement``` instance, if informed the agent
+   * will consider a search only by its children.
    *
-   * @returns A result promise data of the command.
+   * @returns Widget ```OEElement``` instance.
    */
-  public get(attr: OEAttributes | string, element: OEElement): OEResultData {
-    return browser.call(() => this.oeSocket.send(true, true, 'GET', element.id, attr));
+  public findElement(name: string, visible = true, parent?: OEElement): OEElement {
+    const element = new OEElement(this);
+    const parentId = parent ? parent.id : '';
+
+    browser.call(() => {
+      return this.oeSocket.send(true, 'FINDELEMENT', name, visible, parentId)
+        .then((id: string) => (element.id = parseInt(id)));
+    });
+
+    return element;
   }
 
   /**
-   * Set an attribute value to the informed element.
+   * Search for an OE widget with the value of the informed attribute.
    *
-   * @param element Widget ```OEElement``` instance.
    * @param attr Attribute name.
    * @param value Attribute value.
+   * @param visible ```true``` to only search visible elements.
+   * @param parent Parent ```OEElement``` instance, if informed the agent
+   * will consider a search only by its children.
    *
-   * @returns A result promise of the command.
+   * @returns Widget ```OEElement``` instance.
    */
-  public set(attr: OEAttributes | string, value: string, element: OEElement): OEResultConn {
-    return browser.call(() => this.oeSocket.send(true, true, 'SET', element.id, attr, value).then(() => true));
-  }
+  public findElementByAttribute(attribute: OEAttributes, value: string, visible = true, parent?: OEElement): OEElement {
+    const element = new OEElement(this);
+    const parentId = parent ? parent.id : '';
 
-  public clear(element: OEElement): OEResultConn {
-    return browser.call(() => this.oeSocket.send(true, true, 'CLEAR', element.id).then(() => true));
+    browser.call(() => {
+      return this.oeSocket.send(true, 'FINDELEMENTBYATTRIBUTE', attribute, value, visible, parentId)
+        .then((id: string) => (element.id = parseInt(id)));
+    });
+
+    return element;
   }
 
   /**
-   * Send keys events to the informed element.
+   * Clears the widget ```SCREEN-VALUE```.
    *
-   * @param keys Text or keys that will be sent to the element.
+   * @param element Widget ```OEElement``` instance.
+   * @returns A promise result of the command.
+   */
+  public clear(element: OEElement): promise.Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'CLEAR', element.id).then(() => true));
+  }
+
+  /**
+   * Changes the widget ```SCREEN-VALUE```.
+   *
+   * @param value Widget's new ```SCREEN-VALUE```.
    * @param element Widget ```OEElement``` instance.
    *
-   * @returns A result promise of the command.
+   * @returns A promise result of the command.
    */
-  public sendKeys(keys: string | number, element: OEElement): OEResultConn {
-    return browser.call(() => this.oeSocket.send(true, true, 'SENDKEYS', element.id, keys).then(() => true));
+  public sendKeys(value: string | number, element: OEElement): promise.Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'SENDKEYS', element.id, value).then(() => true));
   }
 
   /**
-   * Select a row in a OE BROWSE widget.
-   *
-   * @param row Row number.
-   * @param element Browse widget ```OEElement``` instance.
-   *
-   * @returns A result promise of the command.
-   */
-  public selectRow(row: number, element: OEElement): OEResultConn {
-    return browser.call(() => this.oeSocket.send(true, true, 'SELECTROW', element.id, row).then(() => true));
-  }
-
-  /**
-   * Moves a QUERY object result pointer of the informed BROWSE widget to the
-   * specified row.
-   *
-   * @param element Browse widget ```OEElement``` instance.
-   * @param row Row number.
-   *
-   * @returns A result promise of the command.
-   */
-  public repositionToRow(row: number, element: OEElement): OEResultConn {
-    return browser.call(() => this.oeSocket.send(true, true, 'REPOSITIONTOROW', element.id, row).then(() => true));
-  }
-
-  /**
-   * Check/Uncheck a TOGGLE-BOX widget.
+   * Checks/Unchecks a TOGGLE-BOX widget.
    *
    * @param check ```true``` to check the widget.
-   * @param element Browse widget ```OEElement``` instance.
+   * @param element Widget ```OEElement``` instance.
    *
-   * @returns A result promise of the command.
+   * @returns A promise result of the command.
    */
-  public check(check: boolean, element: OEElement): OEResultConn {
-    return browser.call(() => this.oeSocket.send(true, true, 'CHECK', element.id, check).then(() => true));
+  public check(check: boolean, element: OEElement): promise.Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'CHECK', element.id, check).then(() => true));
   }
 
   /**
-   * Select a value in a COMBO-BOX widget.
+   * Selects a value in a COMBO-BOX or RADIO-SET widget.
    *
    * @param value Selection value.
-   * @param partial ```true``` to select the value even if it's partial.
-   * @param element widget ```OEElement``` instance.
+   * @param partial ```true``` if it's a partial value.
+   * @param element Widget ```OEElement``` instance.
    *
-   * @returns A result promise of the command.
+   * @returns A promise result of the command.
    */
-  public select(value: string | number, partial = false, element: OEElement): OEResultConn {
-    return browser.call(() => this.oeSocket.send(true, true, 'SELECT', element.id, value, partial).then(() => true));
+  public select(value: string | number, partial = false, element: OEElement): promise.Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'SELECT', element.id, value, partial).then(() => true));
   }
 
   /**
-   * Fire a ```CHOOSE``` event to the informed element.
-   * OBS: There's a ```browser.sleep``` call to prevent overloading the server.
+   * Selects a row in a BROWSE widget.
+   *
+   * @param row Row number.
+   * @param element Widget ```OEElement``` instance.
+   *
+   * @returns A promise result of the command.
+   */
+  public selectRow(row: number, element: OEElement): promise.Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'SELECTROW', element.id, row).then(() => true));
+  }
+
+  /**
+   * Moves a QUERY result pointer of a BROWSE widget to the specified row.
+   *
+   * @param row Row number.
+   * @param element Widget ```OEElement``` instance.
+   *
+   * @returns A promise result of the command.
+   */
+  public repositionToRow(row: number, element: OEElement): promise.Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'REPOSITIONTOROW', element.id, row).then(() => true));
+  }
+
+  /**
+   * Fire the widget ```CHOOSE``` event.
    *
    * @param element Widget ```OEElement``` instance.
-   * @returns A result promise of the command.
+   * @returns A promise result of the command.
    */
-  public choose(element: OEElement): OEResultConn {
-    return browser.call(() => this.oeSocket.send(true, false, 'CHOOSE', element.id).then(() => browser.sleep(500)).then(() => true));
+  public choose(element: OEElement): promise.Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(false, 'CHOOSE', element.id).then(() => browser.sleep(500)).then(() => true));
   }
 
   /**
-   * Send an ```APPLY``` command to fire an event to the informed element.
-   * OBS: There's a ```browser.sleep``` call to prevent overloading the server.
+   * Sends an ```APPLY``` command with an event to the widget.
    *
    * @param event Event name.
    * @param element Widget ```OEElement``` instance.
    *
-   * @returns A result promise of the command.
+   * @returns A promise result of the command.
    */
-  public apply(event: OEEvents | string, element: OEElement): OEResultConn {
-    return browser.call(() => this.oeSocket.send(true, false, 'APPLY', element.id, event).then(() => browser.sleep(500)).then(() => true));
+  public apply(event: OEEvents | string, element: OEElement): promise.Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(false, 'APPLY', element.id, event).then(() => browser.sleep(500)).then(() => true));
   }
 
   /**
-   * Query for one or more records in a OE table.
+   * Gets the widget's informed attribute value.
+   *
+   * @param attr Attribute name.
+   * @param element Widget ```OEElement``` instance.
+   *
+   * @returns A promise result data of the command.
+   */
+  public get(attr: OEAttributes | string, element: OEElement): promise.Promise<string> {
+    return browser.call(() => this.oeSocket.send(true, 'GET', element.id, attr));
+  }
+
+  /**
+   * Sets the widget's informed attribute value.
+   *
+   * @param attr Attribute name.
+   * @param value Attribute value.
+   * @param element Widget ```OEElement``` instance.
+   *
+   * @returns A promise result of the command.
+   */
+  public set(attr: OEAttributes | string, value: string, element: OEElement): promise.Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'SET', element.id, attr, value).then(() => true));
+  }
+
+  /**
+   * Selects one or more records of the informed table.
    *
    * @param table Table name.
    * @param where Query's WHERE clause.
    *
-   * @returns A result promise data of the command.
+   * @returns A promise result data of the command.
    *
    * @example
    * ```typescript
@@ -295,17 +309,17 @@ export class OEAgent {
    * // };
    * ```
    */
-  public query(table: string, where: string): OEResultData {
-    return browser.call(() => this.oeSocket.send(true, true, 'QUERY', table, where).then((result) => JSON.parse(result)));
+  public query(table: string, where: string): promise.Promise<Object | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'QUERY', table, where).then((result) => JSON.parse(result)));
   }
 
   /**
-   * Create one or more records in a OE table.
+   * Creates one or more records in the informed table.
    *
    * @param table Table name.
    * @param data TEMP-TABLE "like" JSON with the records.
    *
-   * @returns A result promise of the command.
+   * @returns A promise result of the command.
    *
    * @example
    * ```typescript
@@ -323,18 +337,18 @@ export class OEAgent {
    * oe.create("Department", data);
    * ```
    */
-  public create(table: string, data: {}): OEResultConn {
-    return browser.call(() => this.oeSocket.send(true, true, 'CREATE', table, JSON.stringify(data)).then(() => true));
+  public create(table: string, data: Object): promise.Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'CREATE', table, JSON.stringify(data)).then(() => true));
   }
 
   /**
-   * Update one or more records in a OE table.
+   * Updates one or more records of the informed table.
    *
    * @param table Table name.
    * @param data TEMP-TABLE "like" JSON with the records.
    * @param index Table index columns.
    *
-   * @returns A result promise of the command.
+   * @returns A promise result of the command.
    *
    * @example
    * ```typescript
@@ -352,18 +366,18 @@ export class OEAgent {
    * oe.update("Department", data, ["DeptCode"]);
    * ```
    */
-  public update(table: string, data: {}, index: string[]): OEResultConn {
-    return browser.call(() => this.oeSocket.send(true, true, 'UPDATE', table, JSON.stringify(data), JSON.stringify(index)).then(() => true));
+  public update(table: string, data: Object, index: string[]): promise.Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'UPDATE', table, JSON.stringify(data), JSON.stringify(index)).then(() => true));
   }
 
   /**
-   * Delete one or more records in a OE table.
+   * Deletes one or more records of the informed table.
    *
    * @param table Table name.
    * @param data TEMP-TABLE "like" JSON with the records.
    * @param index Table index columns.
    *
-   * @returns A result promise of the command.
+   * @returns A promise result of the command.
    *
    * @example
    * ```typescript
@@ -379,16 +393,40 @@ export class OEAgent {
    * oe.delete("Department", data, ["DeptCode"]);
    * ```
    */
-  public delete(table: string, data: {}, index: string[]): OEResultConn {
-    return browser.call(() => this.oeSocket.send(true, true, 'DELETE', table, JSON.stringify(data), JSON.stringify(index)).then(() => true));
+  public delete(table: string, data: {}, index: string[]): promise.Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'DELETE', table, JSON.stringify(data), JSON.stringify(index)).then(() => true));
   }
 
   /**
-   * Return ```true``` with there's an application with the informed title.
-   * OBS: this is search all opened applications in the OS.
+   * Sends a ```RUN``` command to open an OE application.
+   *
+   * @param run OE application path (full or partial according to PROPATH).
+   * @param params Application input parameters.
+   *
+   * @returns A promise result of the command.
+   */
+  public run(run: string, params: string[] = []): promise.Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(false, 'RUN', run, params).then(() => browser.sleep(500))).then(() => true);
+  }
+
+  /**
+   * Sends a ```QUIT``` command to the agent.
+   * This will close all comunication with the agent server.
+   *
+   * @returns A promise result of the command.
+   */
+  public quit(): promise.Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(false, `QUIT`).then(() => browser.sleep(500))).then(() => true);
+  }
+
+  /**
+   * Tests if an application exists with the informed title.
+   * OBS: this uses Robot and will consider all opened applications in the OS.
    *
    * @param title Window title.
    * @param timeout Waiting timeout.
+   *
+   * @returns A promise result of the command.
    */
   public windowExists(title: string, timeout = 10000): promise.Promise<boolean> {
     return browser.call(() => new Promise((resolve) => {
@@ -405,14 +443,16 @@ export class OEAgent {
   }
 
   /**
-   * Send keys to an application with the informed title.
-   * OBS: this is search all opened applications in the OS.
+   * Sends keyboard events to an application with the informed title.
+   * OBS: this uses Robot and will consider all opened applications in the OS.
    *
    * @param title Window title.
-   * @param keys Text or keys that will be sent.
+   * @param keys Keyboard events.
    * @param timeout Waiting timeout.
+   *
+   * @returns A promise result of the command.
    */
-  public windowSendKeys(title: string, keys: string | string[], timeout = 10000): OEResultConn {
+  public windowSendKeys(title: string, keys: string | string[], timeout = 10000): promise.Promise<boolean | Error> {
     return browser.call(() => new Promise((resolve, reject) => {
       keys = Array.isArray(keys) ? keys : [keys];
       keys = keys.join('');
@@ -427,50 +467,55 @@ export class OEAgent {
   }
 
   /**
-   * Send an OK click in an OE alert-box error message.
+   * Sends an "OK" click in an OE alert-box error message.
+   * @returns A promise result of the command.
    */
-  public alertErrorOK(): OEResultConn {
+  public alertErrorOK(): promise.Promise<boolean | Error> {
     return this.alertClick('Error', OEButtons.OK);
   }
 
   /**
-   * Send an OK click in an OE alert-box warning message.
+   * Send an "OK" click in an OE alert-box warning message.
+   * @returns A promise result of the command.
    */
-  public alertWarningOK(): OEResultConn {
+  public alertWarningOK(): promise.Promise<boolean | Error> {
     return this.alertClick('Warning', OEButtons.OK);
   }
 
   /**
-   * Send an OK click in an OE alert-box info message.
+   * Send an "OK" click in an OE alert-box info message.
+   * @returns A promise result of the command.
    */
-  public alertInfoOK(): OEResultConn {
+  public alertInfoOK(): promise.Promise<boolean | Error> {
     return this.alertClick('Information', OEButtons.OK);
   }
 
   /**
-   * Send an YES click in an OE alert-box question message.
+   * Send a "YES" click in an OE alert-box question message.
+   * @returns A promise result of the command.
    */
-  public alertQuestionYes(): OEResultConn {
+  public alertQuestionYes(): promise.Promise<boolean | Error> {
     return this.alertClick('Question', OEButtons.YES);
   }
 
   /**
-   * Send an NO click in an OE alert-box question message.
+   * Send a "NO" click in an OE alert-box question message.
+   * @returns A promise result of the command.
    */
-  public alertQuestionNo(): OEResultConn {
+  public alertQuestionNo(): promise.Promise<boolean | Error> {
     return this.alertClick('Question', OEButtons.NO);
   }
 
   /**
-   * Send a click to an OE alert-box message.
+   * Sends a click to an OE alert-box message.
    *
    * @param title Alert-box message title.
    * @param button Button type.
-   * @param timeout Waiting timeout
+   * @param timeout Waiting timeout.
    *
-   * @return A result promise of the command.
+   * @returns A promise result of the command.
    */
-  public alertClick(title: string, button: OEButtons, timeout = 10000): OEResultConn {
+  public alertClick(title: string, button: OEButtons, timeout = 10000): promise.Promise<boolean | Error> {
     return browser.call(() => new Promise((resolve, reject) => {
       try {
         execSync(`${__dirname.replace(/\\/g, '/')}/robot/Robot.exe -t ${timeout} -w "${title}" -b ${button}`);
@@ -479,26 +524,6 @@ export class OEAgent {
         reject(error);
       }
     }));
-  }
-
-  /**
-   * Send a ```RUN``` command to open an OE application.
-   * OBS: There's a ```browser.sleep``` call to prevent overloading the server.
-   *
-   * @param run OE application path (full or partial according to PROPATH).
-   * @param params Application input parameters.
-   */
-  public run(run: string, params: string[] = []): void {
-    browser.call(() => this.oeSocket.send(true, false, 'RUN', run, params).then(() => browser.sleep(500)));
-  }
-
-  /**
-   * Send a ```QUIT``` command to the agent. This will close the comunication
-   * with the agent and quit the application.
-   * OBS: There's a ```browser.sleep``` call to prevent overloading the server.
-   */
-  public quit(): void {
-    browser.call(() => this.oeSocket.send(true, false, `QUIT`).then(() => browser.sleep(500)));
   }
 
   /**
