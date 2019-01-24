@@ -1,70 +1,102 @@
+import { promise } from 'protractor';
+
 import { OEAgent } from './OEAgent';
 import { OEAttributes } from './OEAttributes.enum';
 import { OEEvents } from './OEEvents.enum';
-import { OEResultData } from './OESocket';
 
 export class OEElement {
   public id!: number;
 
   constructor(private oe: OEAgent) {}
 
-  public findElement(name: string, visible = true): OEElement {
-    return this.oe.findElement(name, visible, this);
-  }
-
-  public findElementByAttribute(attribute: OEAttributes, value: string, visible = true): OEElement {
-    return this.oe.findElementByAttribute(attribute, value, visible, this);
-  }
-
+  /**
+   * Wait until an OE child widget is found with the informed name attribute or
+   * a timeout error is raised.
+   *
+   * @param name Widget ```NAME``` attribute.
+   * @param visible ```true``` to only search visible elements.
+   * @param timeout Waiting timeout.
+   *
+   * @returns Widget ```OEElement``` instance.
+   */
   public waitForElement(name: string, visible = true, timeout?: number): OEElement {
     return this.oe.waitForElement(name, visible, timeout, this);
   }
 
-  public choose(): OEElement {
-    this.oe.choose(this);
+  /**
+   * Searches for an OE child widget with the informed name attribute.
+   *
+   * @param name Widget ```NAME``` attribute.
+   * @param visible ```true``` to only search visible elements.
+   *
+   * @returns Widget ```OEElement``` instance.
+   */
+  public findElement(name: string, visible = true): OEElement {
+    return this.oe.findElement(name, visible, this);
+  }
+
+  /**
+   * Search for an OE child widget with the value of the informed attribute.
+   *
+   * @param attr Attribute name.
+   * @param value Attribute value.
+   * @param visible ```true``` to only search visible elements.
+   *
+   * @returns Widget ```OEElement``` instance.
+   */
+  public findElementByAttribute(attribute: OEAttributes, value: string, visible = true): OEElement {
+    return this.oe.findElementByAttribute(attribute, value, visible, this);
+  }
+
+  /**
+   * Return this widget ```SENSITIVE``` value.
+   * @returns A promise result data of the command.
+   */
+  public isEnabled(): promise.Promise<boolean> {
+    return this.get(OEAttributes.SENSITIVE).then((enabled: string) => enabled === 'true' || enabled === 'yes');
+  }
+
+  /**
+   * Return this widget ```CHECKED``` value.
+   * @returns A promise result data of the command.
+   */
+  public isChecked(): promise.Promise<boolean> {
+    return this.get(OEAttributes.CHECKED).then((checked: string) => checked === 'true' || checked === 'yes');
+  }
+
+  /**
+   * Clears this widget ```SCREEN-VALUE```.
+   * @returns This widget ```OEElement``` instance.
+   */
+  public clear(): OEElement {
+    this.oe.clear(this);
     return this;
   }
 
-  public apply(apply: OEEvents | string): OEElement {
-    this.oe.apply(apply, this);
+  /**
+   * Changes this widget ```SCREEN-VALUE```.
+   *
+   * @param value Widget's new ```SCREEN-VALUE```.
+   * @returns This widget ```OEElement``` instance.
+   */
+  public sendKeys(keys: string | number): OEElement {
+    this.oe.sendKeys(keys, this);
     return this;
   }
 
-  public get(attribute: OEAttributes): OEResultData {
-    return this.oe.get(attribute, this);
-  }
-
-  public set(attribute: OEAttributes, value: string): OEElement {
-    this.oe.set(attribute, value, this);
-    return this;
-  }
-
-  public getValue(): OEResultData {
+  /**
+   * Returns this widget ```SCREEN-VALUE```.
+   * @returns A promise result data of the command.
+   */
+  public getValue(): promise.Promise<string> {
     return this.get(OEAttributes.SCREENVALUE);
   }
 
-  public selectRow(row: number): OEElement {
-    this.oe.selectRow(row, this);
-    return this;
-  }
-
   /**
-   * Moves a QUERY object result pointer of the informed BROWSE widget to the
-   * specified row.
-   *
-   * @param row Row number.
-   * @returns The element itself.
-   */
-  public repositionToRow(row: number): OEElement {
-    this.oe.repositionToRow(row, this);
-    return this;
-  }
-
-  /**
-   * Check/Uncheck a TOGGLE-BOX widget.
+   * Checks/Unchecks this TOGGLE-BOX widget.
    *
    * @param check ```true``` to check the widget.
-   * @returns The element itself.
+   * @returns This widget ```OEElement``` instance.
    */
   public check(check: boolean): OEElement {
     this.oe.check(check, this);
@@ -72,33 +104,80 @@ export class OEElement {
   }
 
   /**
-   * Select a value in a COMBO-BOX widget.
+   * Selects a value in this COMBO-BOX or RADIO-SET widget.
    *
    * @param value Selection value.
-   * @param partial ```true``` to select the value even if it's partial.
+   * @param partial ```true``` if it's a partial value.
    *
-   * @returns The element itself.
+   * @returns This widget ```OEElement``` instance.
    */
   public select(value: string | number, partial = false): OEElement {
     this.oe.select(value, partial, this);
     return this;
   }
 
-  public clear(): OEElement {
-    this.oe.clear(this);
+  /**
+   * Selects a row in this BROWSE widget.
+   *
+   * @param row Row number.
+   * @returns This widget ```OEElement``` instance.
+   */
+  public selectRow(row: number): OEElement {
+    this.oe.selectRow(row, this);
     return this;
   }
 
-  public sendKeys(keys: string | number): OEElement {
-    this.oe.sendKeys(keys, this);
+  /**
+   * Moves the QUERY result pointer of this BROWSE widget to the specified row.
+   *
+   * @param row Row number.
+   * @returns This widget ```OEElement``` instance.
+   */
+  public repositionToRow(row: number): OEElement {
+    this.oe.repositionToRow(row, this);
     return this;
   }
 
-  public isEnabled(): OEResultData {
-    return this.get(OEAttributes.SENSITIVE).then((enabled: string) => enabled === 'true');
+  /**
+   * Fire this widget ```CHOOSE``` event.
+   * @returns This widget ```OEElement``` instance.
+   */
+  public choose(): OEElement {
+    this.oe.choose(this);
+    return this;
   }
 
-  public isChecked(): OEResultData {
-    return this.get(OEAttributes.CHECKED).then((checked: string) => checked === 'true');
+  /**
+   * Sends an ```APPLY``` command with an event to this widget.
+   *
+   * @param event Event name.
+   * @returns This widget ```OEElement``` instance.
+   */
+  public apply(apply: OEEvents | string): OEElement {
+    this.oe.apply(apply, this);
+    return this;
+  }
+
+  /**
+   * Gets this widget's informed attribute value.
+   *
+   * @param attr Attribute name.
+   * @returns A promise result data of the command.
+   */
+  public get(attribute: OEAttributes): promise.Promise<string> {
+    return this.oe.get(attribute, this);
+  }
+
+  /**
+   * Sets this widget's informed attribute value.
+   *
+   * @param attr Attribute name.
+   * @param value Attribute value.
+   *
+   * @returns This widget ```OEElement``` instance.
+   */
+  public set(attribute: OEAttributes, value: string): OEElement {
+    this.oe.set(attribute, value, this);
+    return this;
   }
 }

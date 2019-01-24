@@ -14,7 +14,7 @@ export enum MessageType {
 
 export class OEUtils {
   /**
-   * Show a console message.
+   * Shows a console message.
    *
    * @param message Message text.
    * @param type Message type.

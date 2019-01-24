@@ -1,8 +1,8 @@
 import { browser } from 'protractor';
 
-import { OEAttributes, OEConfig, OEElement, OEAgent } from '../src';
+import { OEAgent, OEConfig, OEElement, OEEvents } from '../dist';
 
-describe('OpenEdge application', () => {
+describe('Sample CustOrderMenu', () => {
   const oe = new OEAgent();
   let custOrderMenuWindow: OEElement;
 
@@ -20,9 +20,9 @@ describe('OpenEdge application', () => {
   });
 
   it('should execute CustOrderMenu application', () => {
-    oe.run('h-CustOrderMenu.w'); // Will execute the OpenEdge application.
+    oe.run('h-CustOrderMenu.w'); // Execute the OpenEdge application.
 
-    custOrderMenuWindow = oe.findWindow('Customers and Orders'); // Get the HANDLE of the application's window.
+    custOrderMenuWindow = oe.waitForWindow('Customers and Orders'); // Get the HANDLE of the application's window.
     browser.call(() => expect(custOrderMenuWindow.id).toBeDefined()); // Important to call "expect" inside "browser.call" in this case.
   });
 
@@ -31,7 +31,7 @@ describe('OpenEdge application', () => {
     firstButton.choose();
 
     const custNum = custOrderMenuWindow.findElement('CustNum');
-    expect(custNum.get(OEAttributes.SCREENVALUE)).toBe('1');
+    expect(custNum.getValue()).toBe('1');
   });
 
   it('should go to the next record', () => {
@@ -39,7 +39,7 @@ describe('OpenEdge application', () => {
     firstButton.choose();
 
     const custNum = custOrderMenuWindow.findElement('CustNum');
-    expect(custNum.get(OEAttributes.SCREENVALUE)).toBe('2');
+    expect(custNum.getValue()).toBe('2');
   });
 
   it('should go to the previous record', () => {
@@ -47,7 +47,7 @@ describe('OpenEdge application', () => {
     firstButton.choose();
 
     const custNum = custOrderMenuWindow.findElement('CustNum');
-    expect(custNum.get(OEAttributes.SCREENVALUE)).toBe('1');
+    expect(custNum.getValue()).toBe('1');
   });
 
   it('should go to the last record', () => {
@@ -55,8 +55,11 @@ describe('OpenEdge application', () => {
     firstButton.choose();
 
     const custNum = custOrderMenuWindow.findElement('CustNum');
-    expect(custNum.get(OEAttributes.SCREENVALUE)).toBe('2106');
+    expect(custNum.getValue()).toBe('2106');
   });
 
-  afterAll(() => oe.quit());
+  afterAll(() => {
+    custOrderMenuWindow.apply(OEEvents.WINDOWCLOSE);
+    oe.quit();
+  });
 });

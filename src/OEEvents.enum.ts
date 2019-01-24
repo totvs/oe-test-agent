@@ -1,3 +1,6 @@
+/**
+ * Progress OpenEdge Events.
+ */
 export enum OEEvents {
   CHOOSE = 'CHOOSE',
   CLOSE = 'CLOSE',

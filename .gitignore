@@ -2,3 +2,5 @@
 **/dist/
 **/node_modules/
 **/*.log
+**/test/*.js
+**/test/*.d.ts
