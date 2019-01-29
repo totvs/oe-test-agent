@@ -3,8 +3,9 @@ import { promise } from 'protractor';
  * Provides a socket communication with the agent server.
  */
 export declare class OESocket {
-    private client;
     private isConnected;
+    private socket;
+    constructor();
     /**
      * Creates a new client connection to the agent server.
      *
@@ -19,6 +20,10 @@ export declare class OESocket {
      * @returns ```true``` if the agent server is connected.
      */
     connected(): boolean;
+    /**
+     * Closes the connection with the agent server.
+     */
+    close(): void;
     /**
      * Event fired when the client connects to the agent server.
      * @param resolve Resolve function of the connection Promise.

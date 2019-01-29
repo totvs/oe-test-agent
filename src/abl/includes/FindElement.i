@@ -28,29 +28,6 @@
  Notes: The search will consider all opened OE applications.
 ------------------------------------------------------------------------------*/
 PROCEDURE FindOEElement PRIVATE:
-    DEFINE INPUT  PARAMETER cName    AS CHARACTER NO-UNDO.
-    DEFINE INPUT  PARAMETER lVisible AS LOGICAL   NO-UNDO.
-    DEFINE OUTPUT PARAMETER hElement AS HANDLE    NO-UNDO.
-
-    DEFINE VARIABLE hWindow AS HANDLE NO-UNDO.
-
-    hWindow = SESSION:FIRST-CHILD.
-
-    DO  WHILE VALID-HANDLE(hWindow):
-        RUN FindOEChildElement(INPUT hWindow, INPUT cName, INPUT lVisible, OUTPUT hElement).
-        
-        IF  VALID-HANDLE(hElement) <> ? THEN
-            LEAVE.
-        
-        hWindow = hWindow:NEXT-SIBLING.
-    END.
-END PROCEDURE.
-
-/*------------------------------------------------------------------------------
- Purpose: Find an WIDGET component with the informed NAME attribute.
- Notes: The search will consider only components inside the informed parent.
-------------------------------------------------------------------------------*/
-PROCEDURE FindOEChildElement PRIVATE:
     DEFINE INPUT  PARAMETER hParent  AS HANDLE    NO-UNDO.
     DEFINE INPUT  PARAMETER cName    AS CHARACTER NO-UNDO.
     DEFINE INPUT  PARAMETER lVisible AS LOGICAL   NO-UNDO.
@@ -58,37 +35,81 @@ PROCEDURE FindOEChildElement PRIVATE:
 
     DEFINE VARIABLE hChild AS HANDLE NO-UNDO.
 
-    IF  hParent:NAME = cName AND ((lVisible AND hParent:VISIBLE) OR NOT lVisible) THEN
-        hElement = hParent.
-    ELSE 
-    DO:
-        IF  LOOKUP(hParent:TYPE, "WINDOW,FRAME,FIELD-GROUP,DIALOG-BOX") > 0 THEN
+    IF  hParent = ? THEN
+        hParent = SESSION:FIRST-CHILD.
+    
+    RUN FindOEChildElement(INPUT hParent, INPUT cName, INPUT lVisible, OUTPUT hElement).
+END PROCEDURE.
+
+/*------------------------------------------------------------------------------
+ Purpose: Find an WIDGET element with the informed NAME attribute.
+ Notes: The search will consider all opened OE applications.
+------------------------------------------------------------------------------*/
+PROCEDURE FindOEMenuElement PRIVATE:
+    DEFINE INPUT  PARAMETER hParent  AS HANDLE    NO-UNDO.
+    DEFINE INPUT  PARAMETER cName    AS CHARACTER NO-UNDO.
+    DEFINE OUTPUT PARAMETER hElement AS HANDLE    NO-UNDO.
+
+    IF  CAN-QUERY(hParent,"MENU-BAR") AND hParent:MENU-BAR <> ? THEN
+        RUN FindOEChildElement(INPUT hParent:MENU-BAR, INPUT cName, INPUT FALSE, OUTPUT hElement).
+END PROCEDURE.
+
+/*------------------------------------------------------------------------------
+ Purpose: Find an WIDGET element with the informed NAME attribute.
+ Notes: The search will consider all opened OE applications.
+------------------------------------------------------------------------------*/
+PROCEDURE FindOEChildElement PRIVATE:
+    DEFINE INPUT  PARAMETER hChild   AS HANDLE    NO-UNDO.
+    DEFINE INPUT  PARAMETER cName    AS CHARACTER NO-UNDO.
+    DEFINE INPUT  PARAMETER lVisible AS LOGICAL   NO-UNDO.
+    DEFINE OUTPUT PARAMETER hElement AS HANDLE    NO-UNDO.
+
+    DEFINE VARIABLE hColumn AS HANDLE NO-UNDO.
+    
+    FindElementLoop:
+    DO  WHILE VALID-HANDLE(hChild):
+        IF  hChild:NAME = cName AND ((lVisible AND hChild:VISIBLE) OR NOT lVisible) THEN
         DO:
-            hChild = hParent:FIRST-CHILD.
-
-            DO  WHILE VALID-HANDLE(hChild):
-                RUN FindOEChildElement(INPUT hChild, INPUT cName, INPUT lVisible, OUTPUT hElement).
-                
-                IF  VALID-HANDLE(hElement) THEN
-                    LEAVE.
-
-                hChild = hChild:NEXT-SIBLING.
-            END.
+            hElement = hChild.
+            LEAVE FindElementLoop.
         END.
         ELSE
         DO:
-            IF  LOOKUP(hParent:TYPE, "BROWSE") > 0 THEN
+            RUN FindOEMenuElement(INPUT hChild, INPUT cName, OUTPUT hElement).
+        
+            IF  VALID-HANDLE(hElement) THEN
+                LEAVE FindElementLoop.
+            ELSE
             DO:
-                hElement = hParent:FIRST-COLUMN.
+                IF  hChild:TYPE = "BROWSE" THEN
+                DO:
+                    hColumn = hChild:FIRST-COLUMN.
 
-                DO  WHILE VALID-HANDLE(hElement):
-                    IF  hElement:NAME = cName THEN
-                        LEAVE.
-                    
-                    hElement = hElement:NEXT-COLUMN.
+                    DO  WHILE VALID-HANDLE(hColumn):
+                        IF  hColumn:NAME = cName THEN
+                        DO:
+                            hElement = hColumn.
+                            LEAVE FindElementLoop.
+                        END.
+                        
+                        hColumn = hColumn:NEXT-COLUMN.
+                    END.
+                END.
+                ELSE
+                IF  CAN-QUERY(hChild,"FIRST-CHILD") THEN
+                DO:
+                    RUN FindOEChildElement(INPUT hChild:FIRST-CHILD, INPUT cName, INPUT lVisible, OUTPUT hElement).
+        
+                    IF  VALID-HANDLE(hElement) THEN
+                        LEAVE FindElementLoop.
                 END.
             END.
         END.
+        
+        IF  CAN-QUERY(hChild,"NEXT-SIBLING") THEN
+            hChild = hChild:NEXT-SIBLING.
+        ELSE
+            LEAVE FindElementLoop.
     END.
 END PROCEDURE.
 

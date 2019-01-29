@@ -7,8 +7,10 @@ import { MessageType, OEUtils } from './OEUtils';
  * Provides a socket communication with the agent server.
  */
 export class OESocket {
-  private client!: net.Socket;
   private isConnected = false;
+  private socket!: net.Socket;
+
+  constructor() {}
 
   /**
    * Creates a new client connection to the agent server.
@@ -20,16 +22,16 @@ export class OESocket {
    */
   public connect(host: string, port: number): promise.Promise<boolean | Error> {
     return new Promise((resolve, reject) => {
-      this.client = new net.Socket();
+      OEUtils.consoleLogMessage(`Connecting on agent server at "${host}:${port}"`, MessageType.INFO);
 
-      const connect = () => this.client.connect(port, host);
+      const connect = () => this.socket = net.createConnection(port, host);
       const retries = 5;
 
       connect();
 
-      this.client.on('connect', () => this.onConnect(resolve));
-      this.client.on('close', () => this.onClose());
-      this.client.on('error', (error: Error) => this.onError(connect, retries, error, reject));
+      this.socket.on('connect', () => this.onConnect(resolve));
+      this.socket.on('close', () => this.onClose());
+      this.socket.on('error', (error: Error) => this.onError(connect, retries, error, reject));
     });
   }
 
@@ -42,11 +44,19 @@ export class OESocket {
   }
 
   /**
+   * Closes the connection with the agent server.
+   */
+  public close(): void {
+    this.socket.end();
+  }
+
+  /**
    * Event fired when the client connects to the agent server.
    * @param resolve Resolve function of the connection Promise.
    */
   private onConnect(resolve): void {
     this.isConnected = true;
+    OEUtils.consoleLogMessage(`Agent server successfuly connected`, MessageType.SUCCESS);
     resolve(true);
   }
 
@@ -54,8 +64,11 @@ export class OESocket {
    * Event fired when the client closes its communication with the agent server.
    */
   private onClose(): void {
-    this.client.destroy();
+    this.socket.removeAllListeners();
+    this.socket.destroy();
+    this.socket = undefined as unknown as net.Socket;
     this.isConnected = false;
+    OEUtils.consoleLogMessage(`Agent server connection closed`, MessageType.WARNING);
   }
 
   /**
@@ -66,13 +79,14 @@ export class OESocket {
    * @param error Error object that was raised.
    * @param reject The reject function of the connection Promise.
    */
-  private onError(connect: Function, retries: number, error: Error, reject: (error: Error) => void): void {
-    retries--;
-
-    if (retries > 0) {
+  private onError(connect: Function, retries: number, error: NodeJS.ErrnoException, reject: (error: Error) => void): void {
+    if (error.code === 'ECONNRESET') {
+      this.socket.end();
+    } else if (retries > 0) {
+      retries--;
       setTimeout(connect, 1000);
     } else {
-      this.isConnected = false;
+      OEUtils.consoleLogMessage(`Agent server connection error: ${error.message}`, MessageType.ERROR);
       reject(error);
     }
   }
@@ -112,10 +126,10 @@ export class OESocket {
       const message = `${wait}|${args.join('|')}`;
 
       OEUtils.consoleLogMessage(`Sending data: "${message}"`, MessageType.INFO);
-      this.client.write(message);
+      this.socket.write(message);
 
       if (wait) {
-        this.client.once('data', (data: Buffer) => this.onData(data.toString('utf-8')).then(resolve).catch(reject));
+        this.socket.once('data', (data: Buffer) => this.onData(data.toString('utf-8')).then(resolve).catch(reject));
       } else {
         resolve('OK');
       }

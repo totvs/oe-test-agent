@@ -1,6 +1,6 @@
 /*------------------------------------------------------------------------
     File        : OEAgent.p
-    Purpose     : Communication agent between Protractor and OE 
+    Purpose     : Communication agent between Protractor and OE
 
     Syntax      :
 
@@ -61,17 +61,17 @@ IF  SESSION:DISPLAY-TYPE = "GUI" AND VALID-HANDLE(hWindow) THEN
 ASSIGN
     CURRENT-WINDOW = hWindow
     THIS-PROCEDURE:CURRENT-WINDOW = hWindow.
-    
+
 PAUSE 0 BEFORE-HIDE.
 
 /* --------------------------  UI TRIGGERS  --------------------------- */
-ON  "WINDOW-CLOSE" OF hWindow 
+ON  "WINDOW-CLOSE" OF hWindow
 DO:
     APPLY "CLOSE" TO THIS-PROCEDURE.
 END.
 
 ON  "CLOSE" OF THIS-PROCEDURE
-DO: 
+DO:
     RUN DisableUI.
 END.
 
@@ -86,7 +86,7 @@ MAIN-BLOCK:
 DO ON ERROR   UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK
    ON END-KEY UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK:
     RUN EnableUI.
-    
+
     IF  NOT THIS-PROCEDURE:PERSISTENT THEN
         WAIT-FOR CLOSE OF THIS-PROCEDURE.
 END.
@@ -102,7 +102,7 @@ QUIT.
 PROCEDURE EnableUI PRIVATE:
     VIEW FRAME hFrame IN WINDOW hWindow.
     VIEW hWindow.
-    
+
     cMessage:SCREEN-VALUE IN FRAME hFrame = "Waiting client connection...".
     RUN EnableSocket.
 END PROCEDURE.
@@ -114,7 +114,7 @@ END PROCEDURE.
 PROCEDURE DisableUI PRIVATE:
     RUN CloseSocket.
     DELETE WIDGET hWindow.
-    
+
     IF  THIS-PROCEDURE:PERSISTENT THEN
         DELETE PROCEDURE THIS-PROCEDURE.
 END PROCEDURE.
@@ -134,30 +134,30 @@ END PROCEDURE.
 PROCEDURE AgentIO PRIVATE:
     DEFINE INPUT  PARAMETER cInput  AS CHARACTER NO-UNDO.
     DEFINE OUTPUT PARAMETER cOutput AS CHARACTER NO-UNDO INITIAL ?.
-    
+
     DEFINE VARIABLE cCommand AS CHARACTER NO-UNDO.
     DEFINE VARIABLE aParams  AS CHARACTER NO-UNDO EXTENT.
     DEFINE VARIABLE lWait    AS LOGICAL   NO-UNDO.
-    
+
     RUN DoLog IN hUtils (INPUT "SOCKET-IO", INPUT "Received data: " + cInput).
     RUN GetSocketCommands IN hUtils (INPUT cInput, OUTPUT lWait, OUTPUT cCommand, OUTPUT aParams).
-    
+
     cMessage:SCREEN-VALUE IN FRAME hFrame = "Executing command ~"" + cCommand + "~"".
     RUN DoLog IN hUtils (INPUT "SOCKET-IO", INPUT cMessage:SCREEN-VALUE).
-    
+
     CASE cCommand:
         WHEN "FINDWINDOW" THEN
             RUN FindWindow(INPUT aParams[1], OUTPUT cOutput).
-        
-        WHEN "FINDELEMENT" THEN 
+
+        WHEN "FINDELEMENT" THEN
             RUN FindElement(INPUT aParams[1], INPUT aParams[2], INPUT aParams[3], OUTPUT cOutput).
-        
-        WHEN "FINDELEMENTBYATTRIBUTE" THEN 
+
+        WHEN "FINDELEMENTBYATTRIBUTE" THEN
             RUN FindElementByAttribute(INPUT aParams[1], INPUT aParams[2], INPUT aParams[3], INPUT aParams[4], OUTPUT cOutput).
-        
+
         WHEN "GET" THEN
             RUN Get(INPUT aParams[1], INPUT aParams[2], OUTPUT cOutput).
-        
+
         WHEN "SET" THEN
             RUN Set(INPUT aParams[1], INPUT aParams[2], INPUT aParams[3], OUTPUT cOutput).
 
@@ -166,88 +166,88 @@ PROCEDURE AgentIO PRIVATE:
 
         WHEN "APPLY" THEN
             RUN Apply(INPUT aParams[1], INPUT aParams[2], OUTPUT cOutput).
-        
+
         WHEN "CLEAR" THEN
             RUN Clear(INPUT aParams[1], OUTPUT cOutput).
-        
+
         WHEN "SENDKEYS" THEN
             RUN SendKeys(INPUT aParams[1], INPUT aParams[2], OUTPUT cOutput).
-        
+
         WHEN "SELECTROW" THEN
             RUN SelectRow(INPUT aParams[1], INPUT aParams[2], OUTPUT cOutput).
-        
+
         WHEN "REPOSITIONTOROW" THEN
             RUN RepositionToRow(INPUT aParams[1], INPUT aParams[2], OUTPUT cOutput).
 
         WHEN "CHECK" THEN
             RUN Check(INPUT aParams[1], INPUT aParams[2], OUTPUT cOutput).
-            
+
         WHEN "SELECT" THEN
             RUN Select(INPUT aParams[1], INPUT aParams[2], INPUT aParams[3], OUTPUT cOutput).
-        
+
         WHEN "QUERY" THEN
             RUN Query(INPUT aParams[1], INPUT aParams[2], OUTPUT cOutput).
-            
+
         WHEN "CREATE" THEN
             RUN Create(INPUT aParams[1], INPUT aParams[2], OUTPUT cOutput).
-        
+
         WHEN "UPDATE" THEN
             RUN Update(INPUT aParams[1], INPUT aParams[2], INPUT aParams[3], OUTPUT cOutput).
-        
+
         WHEN "DELETE" THEN
             RUN Delete(INPUT aParams[1], INPUT aParams[2], INPUT aParams[3], OUTPUT cOutput).
-        
+
         WHEN "RUN" THEN
             RUN Run(INPUT aParams[1], INPUT aParams[2], OUTPUT cOutput).
-        
+
         WHEN "QUIT" THEN
             APPLY "CLOSE" TO THIS-PROCEDURE.
-        
+
         OTHERWISE
             cOutput = "NOK|Command ~"" + cCommand + "~" not found!".
     END CASE.
-    
+
     /* Set output to null if there's no wait for response */
     IF  NOT lWait THEN
         cOutput = ?.
-    
+
     IF  cOutput <> ? THEN
         RUN DoLog IN hUtils (INPUT "SOCKET-IO", INPUT "Comand result: " + STRING(cOutput)).
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
  Purpose: Find a WINDOW in all opened applications and return its handle.
- Notes: The search criteria will consider the window's title. 
+ Notes: The search criteria will consider the window's title.
 ------------------------------------------------------------------------------*/
 PROCEDURE FindWindow PRIVATE:
     DEFINE INPUT  PARAMETER cTitle  AS CHARACTER NO-UNDO.
     DEFINE OUTPUT PARAMETER cOutput AS CHARACTER NO-UNDO.
-    
+
     DEFINE VARIABLE hWindow AS HANDLE NO-UNDO.
     DEFINE VARIABLE hChild  AS HANDLE NO-UNDO.
 
     hWindow = SESSION:FIRST-CHILD.
-    
+
     FINDWINDOW:
     DO  WHILE hWindow <> ?:
         IF  INDEX(hWindow:TITLE,cTitle) > 0 THEN
             LEAVE.
-        
+
         hChild = hWindow:FIRST-CHILD.
-        
+
         DO  WHILE hChild <> ?:
-            IF  hChild:TYPE = "DIALOG-BOX" AND INDEX(hChild:TITLE,cTitle) > 0 THEN 
+            IF  hChild:TYPE = "DIALOG-BOX" AND INDEX(hChild:TITLE,cTitle) > 0 THEN
             DO:
                 hWindow = hChild.
                 LEAVE FINDWINDOW.
             END.
-            
+
             hChild = hChild:NEXT-SIBLING.
         END.
-        
+
         hWindow = hWindow:NEXT-SIBLING.
     END.
-    
+
     IF  hWindow <> ? THEN
         cOutput = "OK|" + STRING(hWindow:HANDLE).
     ELSE
@@ -264,20 +264,20 @@ PROCEDURE FindElement PRIVATE:
     DEFINE INPUT  PARAMETER lVisible AS LOGICAL   NO-UNDO.
     DEFINE INPUT  PARAMETER cParent  AS CHARACTER NO-UNDO.
     DEFINE OUTPUT PARAMETER cOutput  AS CHARACTER NO-UNDO.
-    
+
     DEFINE VARIABLE hElement AS HANDLE NO-UNDO.
     DEFINE VARIABLE hParent  AS HANDLE NO-UNDO.
 
     IF  cParent = ? OR cParent = "" THEN
-        RUN FindOEElement(INPUT cName,INPUT lVisible,OUTPUT hElement).
-    ELSE 
+        RUN FindOEElement(INPUT ?, INPUT cName, INPUT lVisible, OUTPUT hElement).
+    ELSE
     DO:
         RUN GetElementHandle(INPUT cParent, OUTPUT hParent, OUTPUT cOutput).
-        
-        IF  RETURN-VALUE = "NOK" THEN 
+
+        IF  RETURN-VALUE = "NOK" THEN
             RETURN.
-        
-        RUN FindOEChildElement(INPUT hParent,INPUT cName,INPUT lVisible,OUTPUT hElement).
+
+        RUN FindOEElement(INPUT hParent, INPUT cName, INPUT lVisible, OUTPUT hElement).
     END.
 
     IF  VALID-HANDLE(hElement) THEN
@@ -297,20 +297,20 @@ PROCEDURE FindElementByAttribute PRIVATE:
     DEFINE INPUT  PARAMETER lVisible   AS LOGICAL   NO-UNDO.
     DEFINE INPUT  PARAMETER cParent    AS CHARACTER NO-UNDO.
     DEFINE OUTPUT PARAMETER cOutput    AS CHARACTER NO-UNDO.
-    
+
     DEFINE VARIABLE hElement AS HANDLE NO-UNDO.
     DEFINE VARIABLE hParent  AS HANDLE NO-UNDO.
 
     IF  cParent <> ? AND cParent <> "" THEN
     DO:
         RUN GetElementHandle(INPUT cParent, OUTPUT hParent, OUTPUT cOutput).
-        
-        IF  RETURN-VALUE = "NOK" THEN 
+
+        IF  RETURN-VALUE = "NOK" THEN
             RETURN.
     END.
-    
+
     RUN FindOEElementByAttribute(INPUT hParent, INPUT cAttribute, INPUT cValue, INPUT lVisible, OUTPUT hElement).
-    
+
     IF  VALID-HANDLE(hElement) THEN
         cOutput = "OK|" + STRING(hElement:HANDLE).
     ELSE
@@ -327,21 +327,21 @@ PROCEDURE Choose PRIVATE:
 
     DEFINE VARIABLE hElement AS HANDLE  NO-UNDO.
     DEFINE VARIABLE lWait    AS LOGICAL NO-UNDO INITIAL TRUE.
-    
+
     IF  cElement <> ? AND cElement <> "" THEN
     DO:
         RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
-        
+
         IF  RETURN-VALUE = "NOK" THEN
             RETURN.
     END.
-    
+
     IF  NOT hElement:SENSITIVE THEN
     DO:
         cOutput = "NOK|Element ~"" + hElement:NAME + "~" is disabled!".
         RETURN.
     END.
-    
+
     RUN Apply(INPUT cElement, INPUT "CHOOSE", OUTPUT cOutput).
 END PROCEDURE.
 
@@ -356,25 +356,25 @@ PROCEDURE Apply PRIVATE:
 
     DEFINE VARIABLE hElement AS HANDLE  NO-UNDO.
     DEFINE VARIABLE lWait    AS LOGICAL NO-UNDO INITIAL TRUE.
-    
+
     IF  cElement <> ? AND cElement <> "" THEN
     DO:
         RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
-        
+
         IF  RETURN-VALUE = "NOK" THEN
             RETURN.
     END.
-    
+
     /**
      * For CHOOSE statements, the agent won't expect any response and will be
      * used a Mouse Click simulation using the "user32.dll".
      * That's because CHOOSE can open other application that will block the
      * execution.
      */
-    IF  CAPS(cEvent) = "CHOOSE" THEN 
+    IF  CAPS(cEvent) = "CHOOSE" THEN
     DO:
         lWait = FALSE.
-        
+
         IF  hElement:TYPE <> "MENU-ITEM" THEN
             RUN MouseClick IN hUtils (INPUT hElement).
         ELSE
@@ -382,7 +382,7 @@ PROCEDURE Apply PRIVATE:
     END.
     ELSE
         APPLY cEvent TO hElement.
-    
+
     cOutput = IF lWait THEN "OK" ELSE ?.
 END PROCEDURE.
 
@@ -397,15 +397,15 @@ PROCEDURE Clear PRIVATE:
     DEFINE VARIABLE hElement AS HANDLE NO-UNDO.
 
     RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
-        
+
     IF  RETURN-VALUE = "NOK" THEN
         RETURN.
-        
+
     IF  hElement:DATA-TYPE = "CHARACTER" THEN
         hElement:SCREEN-VALUE = "".
     ELSE
         hElement:SCREEN-VALUE =  ?.
-    
+
     cOutput = "OK".
 END PROCEDURE.
 
@@ -423,17 +423,17 @@ PROCEDURE SendKeys PRIVATE:
     DEFINE VARIABLE cKey     AS CHARACTER NO-UNDO.
 
     RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
-        
+
     IF  RETURN-VALUE = "NOK" THEN
         RETURN.
-    
+
     /* Can't fire SendKeys in an disabled WIDGET */
     IF  NOT hElement:SENSITIVE THEN
     DO:
         cOutput = "NOK|Element ~"" + hElement:NAME + "~" is disabled!".
         RETURN.
     END.
-    
+
     /* Force focus to the WIDGET so ENTRY and LEAVE events are fired */
     APPLY "ENTRY" TO hElement.
 
@@ -444,7 +444,7 @@ PROCEDURE SendKeys PRIVATE:
     END.
     ELSE
         hElement:SCREEN-VALUE = cKeys.
-    
+
     cOutput = "OK".
 END PROCEDURE.
 
@@ -462,23 +462,23 @@ PROCEDURE Get PRIVATE:
     DEFINE VARIABLE cValue   AS CHARACTER NO-UNDO.
 
     RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
-        
+
     IF  RETURN-VALUE = "NOK" THEN
         RETURN.
-        
+
     CREATE CALL hCall.
     hCall:IN-HANDLE = hElement.
     hCall:CALL-TYPE = GET-ATTR-CALL-TYPE.
     hCall:CALL-NAME = cAttribute.
     hCall:INVOKE NO-ERROR.
-    
+
     cValue = STRING(hCall:RETURN-VALUE).
-    
+
     IF  ERROR-STATUS:ERROR THEN
         cOutput = "NOK|" + ERROR-STATUS:GET-MESSAGE(1).
     ELSE
         cOutput = "OK|" + cValue.
-    
+
     hCall:CLEAR.
     DELETE OBJECT hCall NO-ERROR.
 END PROCEDURE.
@@ -497,10 +497,10 @@ PROCEDURE Set PRIVATE:
     DEFINE VARIABLE hCall    AS HANDLE NO-UNDO.
 
     RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
-        
+
     IF  RETURN-VALUE = "NOK" THEN
         RETURN.
-        
+
     CREATE CALL hCall.
     hCall:IN-HANDLE = hElement.
     hCall:CALL-TYPE = SET-ATTR-CALL-TYPE.
@@ -508,12 +508,12 @@ PROCEDURE Set PRIVATE:
     hCall:NUM-PARAMETERS = 1.
     hCall:SET-PARAMETER(1,"CHARACTER","INPUT",cValue).
     hCall:INVOKE NO-ERROR.
-    
+
     IF  ERROR-STATUS:ERROR THEN
         cOutput = "NOK|" + ERROR-STATUS:GET-MESSAGE(1).
     ELSE
         cOutput = "OK".
-    
+
     hCall:CLEAR.
     DELETE OBJECT hCall NO-ERROR.
 END PROCEDURE.
@@ -526,26 +526,23 @@ PROCEDURE SelectRow PRIVATE:
     DEFINE INPUT  PARAMETER cElement AS CHARACTER NO-UNDO.
     DEFINE INPUT  PARAMETER nRow     AS INTEGER   NO-UNDO.
     DEFINE OUTPUT PARAMETER cOutput  AS CHARACTER NO-UNDO.
-    
+
     DEFINE VARIABLE hElement AS HANDLE NO-UNDO.
 
     RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
-    
+
     IF  RETURN-VALUE = "NOK" THEN
         RETURN.
-        
+
     IF  hElement:TYPE <> "BROWSE" THEN
     DO:
         cOutput = "NOK|Element ~"" + hElement:NAME + "~" isn't a BROWSE!".
         RETURN.
     END.
-    
+
+    /* Doesn't throw an error if the BROWSE doesn't have any row yet */
     hElement:SELECT-ROW(nRow) NO-ERROR.
-    
-    IF  ERROR-STATUS:ERROR THEN
-        cOutput = "NOK|" + ERROR-STATUS:GET-MESSAGE(1).
-    ELSE
-        cOutput = "OK".
+    cOutput = "OK".
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
@@ -557,14 +554,14 @@ PROCEDURE RepositionToRow PRIVATE:
     DEFINE INPUT  PARAMETER cElement AS CHARACTER NO-UNDO.
     DEFINE INPUT  PARAMETER nRow     AS INTEGER   NO-UNDO.
     DEFINE OUTPUT PARAMETER cOutput  AS CHARACTER NO-UNDO.
-    
+
     DEFINE VARIABLE hElement AS HANDLE NO-UNDO.
 
     RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
-    
+
     IF  RETURN-VALUE = "NOK" THEN
         RETURN.
-        
+
     IF  hElement:TYPE <> "BROWSE" THEN
     DO:
         cOutput = "NOK|Element ~"" + hElement:NAME + "~" isn't a BROWSE!".
@@ -572,7 +569,7 @@ PROCEDURE RepositionToRow PRIVATE:
     END.
 
     hElement:QUERY:REPOSITION-TO-ROW(nRow) NO-ERROR.
-    
+
     IF  NOT ERROR-STATUS:ERROR THEN
         cOutput = "OK".
     ELSE
@@ -587,28 +584,28 @@ PROCEDURE Check PRIVATE:
     DEFINE INPUT  PARAMETER cElement AS CHARACTER NO-UNDO.
     DEFINE INPUT  PARAMETER lChecked AS LOGICAL   NO-UNDO.
     DEFINE OUTPUT PARAMETER cOutput  AS CHARACTER NO-UNDO.
-    
+
     DEFINE VARIABLE hElement AS HANDLE NO-UNDO.
 
     RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
-    
+
     IF  RETURN-VALUE = "NOK" THEN
         RETURN.
-        
+
     IF  hElement:TYPE <> "TOGGLE-BOX" THEN
     DO:
         cOutput = "NOK|Element ~"" + hElement:NAME + "~" isn't a TOGGLE-BOX!".
         RETURN.
     END.
-    
+
     IF  NOT hElement:SENSITIVE THEN
     DO:
         cOutput = "NOK|Element ~"" + hElement:NAME + "~" is disabled!".
         RETURN.
     END.
-    
+
     hElement:CHECKED = lChecked NO-ERROR.
-    
+
     IF  ERROR-STATUS:ERROR THEN
         cOutput = "NOK|" + ERROR-STATUS:GET-MESSAGE(1).
     ELSE
@@ -626,32 +623,32 @@ PROCEDURE Select PRIVATE:
     DEFINE INPUT  PARAMETER cValue   AS CHARACTER NO-UNDO.
     DEFINE INPUT  PARAMETER lPartial AS LOGICAL   NO-UNDO.
     DEFINE OUTPUT PARAMETER cOutput  AS CHARACTER NO-UNDO.
-    
+
     DEFINE VARIABLE hElement AS HANDLE  NO-UNDO.
     DEFINE VARIABLE nItem    AS INTEGER NO-UNDO.
     DEFINE VARIABLE nItems   AS INTEGER NO-UNDO.
 
     RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
-    
+
     IF  RETURN-VALUE = "NOK" THEN
         RETURN.
-        
+
     IF  hElement:TYPE <> "COMBO-BOX" AND hElement:TYPE <> "RADIO-SET" THEN
     DO:
         cOutput = "NOK|Element ~"" + hElement:NAME + "~" isn't a COMBO-BOX nor a RADIO-SET!".
         RETURN.
     END.
-    
+
     IF  NOT hElement:SENSITIVE THEN
     DO:
         cOutput = "NOK|Element ~"" + hElement:NAME + "~" is disabled!".
         RETURN.
     END.
-    
+
     IF  lPartial THEN
     DO:
         nItems = NUM-ENTRIES(hElement:LIST-ITEMS).
-        
+
         DO  nItem = 1 TO nItems:
             IF  ENTRY(nItem,hElement:LIST-ITEMS) MATCHES ("*" + cValue + "*") THEN
             DO:
@@ -668,7 +665,7 @@ PROCEDURE Select PRIVATE:
         hElement:SCREEN-VALUE = cValue.
         cOutput = "OK".
     END.
-    
+
     IF  cOutput = ? OR cOutput = "" THEN
         cOutput = "NOK|Element ~"" + hElement:NAME + "~" doesn't have an item with value ~"" + cValue + "~".".
     ELSE
@@ -685,7 +682,7 @@ PROCEDURE Run PRIVATE:
     DEFINE INPUT  PARAMETER cRun    AS CHARACTER NO-UNDO.
     DEFINE INPUT  PARAMETER cParams AS CHARACTER NO-UNDO.
     DEFINE OUTPUT PARAMETER cOutput AS CHARACTER NO-UNDO INITIAL ?.
-    
+
     /* Connect Runner SOCKET client */
     IF  SEARCH(cRun) = ? THEN
         cOutput = "NOK|OE application ~"" + cRun + "~" not found!".
@@ -701,7 +698,7 @@ PROCEDURE Query PRIVATE:
     DEFINE INPUT  PARAMETER cTable  AS CHARACTER NO-UNDO.
     DEFINE INPUT  PARAMETER cWhere  AS CHARACTER NO-UNDO.
     DEFINE OUTPUT PARAMETER cOutput AS CHARACTER NO-UNDO.
-    
+
     DEFINE VARIABLE hBuffer AS HANDLE   NO-UNDO.
     DEFINE VARIABLE hQuery  AS HANDLE   NO-UNDO.
     DEFINE VARIABLE ttQuery AS HANDLE   NO-UNDO.
@@ -724,10 +721,10 @@ PROCEDURE Query PRIVATE:
 
     DO  WHILE TRUE:
         hQuery:GET-NEXT().
-        
+
         IF  hQuery:QUERY-OFF-END THEN
             LEAVE.
-    
+
         hTTable:BUFFER-CREATE().
         hTTable:BUFFER-COPY(hBuffer).
         hTTable:BUFFER-RELEASE().
@@ -735,9 +732,9 @@ PROCEDURE Query PRIVATE:
 
     hQuery:QUERY-CLOSE().
     ttQuery:WRITE-JSON("LONGCHAR", cJson, FALSE).
-    
+
     cOutput = "OK|" + cJson.
-    
+
     CATCH oError AS Progress.Lang.Error:
         cOutput = "NOK|" + oError:GetMessage(1).
     END CATCH.
@@ -761,7 +758,7 @@ PROCEDURE Create PRIVATE:
 
     DEFINE VARIABLE oData   AS JsonObject NO-UNDO.
     DEFINE VARIABLE oTable  AS JsonArray  NO-UNDO.
-    
+
     DEFINE VARIABLE nData   AS INTEGER    NO-UNDO.
     DEFINE VARIABLE hBuffer AS HANDLE     NO-UNDO.
     DEFINE VARIABLE lStatus AS LOGICAL    NO-UNDO.
@@ -769,38 +766,38 @@ PROCEDURE Create PRIVATE:
 
     /* Convert the data to JsonObject */
     RUN ParseChar2JsonObject IN hUtils (INPUT cData, OUTPUT oData).
-    
+
     /* Get the records from the informed table */
     oTable = oData:GetJsonArray(cTable).
-    
+
     /* Creates table BUFFER for creating the informed data */
     CREATE BUFFER hBuffer FOR TABLE cTable.
 
     /* Clears ERROR-STATUS */
     RUN ClearErrorStatus.
-    
+
     CREATERECORDS:
     DO  TRANSACTION:
         DO  nData = 1 TO oTable:Length:
             RUN DoLog IN hUtils (INPUT "CREATE", INPUT "Creating record at ~"" + cTable + "~"").
             lStatus = hBuffer:BUFFER-CREATE() NO-ERROR.
-            
+
             IF  NOT lStatus THEN
             DO:
                 cError = ERROR-STATUS:GET-MESSAGE(1).
                 UNDO CREATERECORDS, LEAVE CREATERECORDS.
             END.
-            
+
             RUN AssignStatementFields(INPUT hBuffer, INPUT oTable:GetJsonObject(nData), OUTPUT lStatus).
-            
+
             IF  NOT lStatus THEN
             DO:
                 cError = ERROR-STATUS:GET-MESSAGE(1).
                 UNDO CREATERECORDS, LEAVE CREATERECORDS.
             END.
-            
+
             lStatus = hBuffer:BUFFER-RELEASE() NO-ERROR.
-            
+
             IF  NOT lStatus THEN
             DO:
                 cError = ERROR-STATUS:GET-MESSAGE(1).
@@ -834,7 +831,7 @@ PROCEDURE Update PRIVATE:
     DEFINE VARIABLE oData   AS JsonObject NO-UNDO.
     DEFINE VARIABLE oIndex  AS JsonArray  NO-UNDO.
     DEFINE VARIABLE oTable  AS JsonArray  NO-UNDO.
-    
+
     DEFINE VARIABLE nData   AS INTEGER    NO-UNDO.
     DEFINE VARIABLE hBuffer AS HANDLE     NO-UNDO.
     DEFINE VARIABLE cWhere  AS CHARACTER  NO-UNDO.
@@ -843,37 +840,37 @@ PROCEDURE Update PRIVATE:
 
     /* Convert the data to JsonObject */
     RUN ParseChar2JsonObject IN hUtils (INPUT cData, OUTPUT oData).
-    
+
     /* Convert the index columns to JsonArray */
     RUN ParseChar2JsonArray IN hUtils (INPUT cIndex, OUTPUT oIndex).
-    
+
     /* Get the records from the informed table */
     oTable = oData:GetJsonArray(cTable).
-    
+
     /* Creates table BUFFER for creating the informed data */
     CREATE BUFFER hBuffer FOR TABLE cTable.
 
     /* Clears ERROR-STATUS */
     RUN ClearErrorStatus.
-    
+
     UPDATERECORDS:
     DO  TRANSACTION:
         DO  nData = 1 TO oTable:Length:
             /* Generate a WHERE clause for the DELETE command */
             RUN GetStatementWhereClause(INPUT hBuffer, INPUT oTable:GetJsonObject(nData), INPUT oIndex, OUTPUT cWhere).
-              
+
             lStatus = hBuffer:FIND-FIRST(cWhere, EXCLUSIVE-LOCK) NO-ERROR.
-            
+
             IF  NOT lStatus THEN
             DO:
                 cError = ERROR-STATUS:GET-MESSAGE(1).
                 UNDO UPDATERECORDS, LEAVE UPDATERECORDS.
             END.
-            
+
             IF  hBuffer:AVAILABLE THEN
             DO:
                 RUN AssignStatementFields(INPUT hBuffer, INPUT oTable:GetJsonObject(nData), OUTPUT lStatus).
-            
+
                 IF  NOT lStatus THEN
                 DO:
                     cError = ERROR-STATUS:GET-MESSAGE(1).
@@ -886,9 +883,9 @@ PROCEDURE Update PRIVATE:
                 cError = "Record (" + STRING(nData) + ") not available!".
                 UNDO UPDATERECORDS, LEAVE UPDATERECORDS.
             END.
-            
+
             lStatus = hBuffer:BUFFER-RELEASE() NO-ERROR.
-            
+
             IF  NOT lStatus THEN
             DO:
                 cError = ERROR-STATUS:GET-MESSAGE(1).
@@ -923,7 +920,7 @@ PROCEDURE Delete PRIVATE:
     DEFINE VARIABLE oData   AS JsonObject NO-UNDO.
     DEFINE VARIABLE oIndex  AS JsonArray  NO-UNDO.
     DEFINE VARIABLE oTable  AS JsonArray  NO-UNDO.
-    
+
     DEFINE VARIABLE nData   AS INTEGER    NO-UNDO.
     DEFINE VARIABLE hBuffer AS HANDLE     NO-UNDO.
     DEFINE VARIABLE cWhere  AS CHARACTER  NO-UNDO.
@@ -932,42 +929,42 @@ PROCEDURE Delete PRIVATE:
 
     /* Convert the data to JsonObject */
     RUN ParseChar2JsonObject IN hUtils (INPUT cData, OUTPUT oData).
-    
+
     /* Convert the index columns to JsonArray */
     RUN ParseChar2JsonArray IN hUtils (INPUT cIndex, OUTPUT oIndex).
-    
+
     /* Get the records from the informed table */
     oTable = oData:GetJsonArray(cTable).
-    
+
     /* Creates table BUFFER for creating the informed data */
     CREATE BUFFER hBuffer FOR TABLE cTable.
 
     /* Clears ERROR-STATUS */
     RUN ClearErrorStatus.
-    
+
     DELETERECORDS:
     DO  TRANSACTION:
         DO  nData = 1 TO oTable:Length:
             /* Generate a WHERE clause for the DELETE command */
             RUN GetStatementWhereClause(INPUT hBuffer, INPUT oTable:GetJsonObject(nData), INPUT oIndex, OUTPUT cWhere).
-              
+
             hBuffer:FIND-FIRST(cWhere, EXCLUSIVE-LOCK, NO-WAIT) NO-ERROR.
-            
+
             /* If the record was already deleted, don't throw an error */
             IF  hBuffer:AVAILABLE THEN
             DO:
                 RUN DoLog IN hUtils (INPUT "DELETE", INPUT "Deleting record at ~"" + cTable + "~" using WHERE clause ~"" + cWhere + "~"").
                 lStatus = hBuffer:BUFFER-DELETE() NO-ERROR.
-                
+
                 IF  NOT lStatus THEN
                 DO:
                     cError = ERROR-STATUS:GET-MESSAGE(1).
                     UNDO DELETERECORDS, LEAVE DELETERECORDS.
                 END.
             END.
-            
+
             lStatus = hBuffer:BUFFER-RELEASE() NO-ERROR.
-            
+
             IF  NOT lStatus THEN
             DO:
                 cError = ERROR-STATUS:GET-MESSAGE(1).
@@ -997,15 +994,15 @@ PROCEDURE GetElementHandle PRIVATE:
     DEFINE INPUT  PARAMETER cElement AS CHARACTER NO-UNDO.
     DEFINE OUTPUT PARAMETER hElement AS HANDLE    NO-UNDO.
     DEFINE OUTPUT PARAMETER cOutput  AS CHARACTER NO-UNDO.
-    
+
     hElement = HANDLE(cElement) NO-ERROR.
-        
+
     IF  NOT VALID-HANDLE(hElement) THEN
     DO:
         cOutput = "NOK|Element ~"" + cElement + "~" not found!.".
         RETURN "NOK".
     END.
-    
+
     RETURN "OK".
 END PROCEDURE.
 

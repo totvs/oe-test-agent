@@ -1,4 +1,3 @@
-import { promise } from 'protractor';
 import { OEAgent } from './OEAgent';
 import { OEAttributes } from './OEAttributes.enum';
 import { OEEvents } from './OEEvents.enum';
@@ -40,12 +39,12 @@ export declare class OEElement {
      * Return this widget ```SENSITIVE``` value.
      * @returns A promise result data of the command.
      */
-    isEnabled(): promise.Promise<boolean>;
+    isEnabled(): Promise<boolean>;
     /**
      * Return this widget ```CHECKED``` value.
      * @returns A promise result data of the command.
      */
-    isChecked(): promise.Promise<boolean>;
+    isChecked(): Promise<boolean>;
     /**
      * Clears this widget ```SCREEN-VALUE```.
      * @returns This widget ```OEElement``` instance.
@@ -62,7 +61,7 @@ export declare class OEElement {
      * Returns this widget ```SCREEN-VALUE```.
      * @returns A promise result data of the command.
      */
-    getValue(): promise.Promise<string>;
+    getValue(): Promise<string>;
     /**
      * Checks/Unchecks this TOGGLE-BOX widget.
      *
@@ -102,16 +101,18 @@ export declare class OEElement {
      * Sends an ```APPLY``` command with an event to this widget.
      *
      * @param event Event name.
+     * @param wait ```true``` to wait the ```APPLY``` event.
+     *
      * @returns This widget ```OEElement``` instance.
      */
-    apply(apply: OEEvents | string): OEElement;
+    apply(apply: OEEvents | string, wait?: boolean): OEElement;
     /**
      * Gets this widget's informed attribute value.
      *
      * @param attr Attribute name.
      * @returns A promise result data of the command.
      */
-    get(attribute: OEAttributes): promise.Promise<string>;
+    get(attribute: OEAttributes): Promise<string>;
     /**
      * Sets this widget's informed attribute value.
      *

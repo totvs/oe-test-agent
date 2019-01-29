@@ -2,6 +2,15 @@
   "name": "oe-test-agent",
   "version": "1.0.2",
   "description": "Progress utility for e2e tests with Protractor",
+  "author": "TOTVS",
+  "license": "ISC",
+  "homepage": "https://github.com/totvs/oe-test-agent",
+  "keywords": [
+    "openedge",
+    "abl",
+    "progress",
+    "protractor"
+  ],
   "main": "./dist/src/index.js",
   "scripts": {
     "gulp": "./node_modules/.bin/gulp4",
@@ -10,14 +19,6 @@
     "postinstall": "npm run webdriver-update",
     "build": "npm run gulp -- build"
   },
-  "keywords": [
-    "openedge",
-    "abl",
-    "progress",
-    "protractor"
-  ],
-  "author": "TOTVS",
-  "license": "ISC",
   "devDependencies": {
     "@types/colors": "^1.2.1",
     "@types/jasmine": "^2.8.9",

@@ -88,8 +88,14 @@ PROCEDURE SocketIO:
             cOutput = "NOK|" + ERROR-STATUS:GET-MESSAGE(1).
         ELSE
         DO:
-            cData = GET-STRING(mData,1).
-            cData = CODEPAGE-CONVERT(cData, {3}, "UTF-8").
+            ASSIGN 
+                cData = GET-STRING(mData,1)
+                cData = TRIM(cData)
+                cData = REPLACE(cData,CHR(01),"")
+                cData = REPLACE(cData,CHR(10),"")
+                cData = REPLACE(cData,CHR(13),"")
+                cData = CODEPAGE-CONVERT(cData, {3}, "UTF-8").
+            
             RUN VALUE("{5}") (INPUT cData, OUTPUT cOutput).
         END.
         

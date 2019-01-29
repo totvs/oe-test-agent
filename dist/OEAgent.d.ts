@@ -1,4 +1,3 @@
-import { promise } from 'protractor';
 import { OEAttributes } from './OEAttributes.enum';
 import { OEButtons } from './OEButtons.enum';
 import { OEConfig } from './OEConfig';
@@ -18,14 +17,14 @@ export declare class OEAgent {
      * @param config Configuration object.
      * @returns A promise result of the agent initialization and connection.
      */
-    start(config: OEConfig): promise.Promise<boolean | Error>;
+    start(config: OEConfig): Promise<boolean | Error>;
     /**
      * Connects to the agent server.
      *
      * @param host Agent server host name or IP address.
      * @param port Agent server port number.
      */
-    connect(host: string, port: number): promise.Promise<boolean | Error>;
+    connect(host: string, port: number): Promise<boolean | Error>;
     /**
      * Returns the agent server connection status.
      * @returns ```true``` if the agent server is connected.
@@ -90,7 +89,7 @@ export declare class OEAgent {
      * @param element Widget ```OEElement``` instance.
      * @returns A promise result of the command.
      */
-    clear(element: OEElement): promise.Promise<boolean | Error>;
+    clear(element: OEElement): Promise<boolean | Error>;
     /**
      * Changes the widget ```SCREEN-VALUE```.
      *
@@ -99,7 +98,7 @@ export declare class OEAgent {
      *
      * @returns A promise result of the command.
      */
-    sendKeys(value: string | number, element: OEElement): promise.Promise<boolean | Error>;
+    sendKeys(value: string | number, element: OEElement): Promise<boolean | Error>;
     /**
      * Checks/Unchecks a TOGGLE-BOX widget.
      *
@@ -108,7 +107,7 @@ export declare class OEAgent {
      *
      * @returns A promise result of the command.
      */
-    check(check: boolean, element: OEElement): promise.Promise<boolean | Error>;
+    check(check: boolean, element: OEElement): Promise<boolean | Error>;
     /**
      * Selects a value in a COMBO-BOX or RADIO-SET widget.
      *
@@ -118,7 +117,7 @@ export declare class OEAgent {
      *
      * @returns A promise result of the command.
      */
-    select(value: string | number, partial: boolean | undefined, element: OEElement): promise.Promise<boolean | Error>;
+    select(value: string | number, partial: boolean | undefined, element: OEElement): Promise<boolean | Error>;
     /**
      * Selects a row in a BROWSE widget.
      *
@@ -127,7 +126,7 @@ export declare class OEAgent {
      *
      * @returns A promise result of the command.
      */
-    selectRow(row: number, element: OEElement): promise.Promise<boolean | Error>;
+    selectRow(row: number, element: OEElement): Promise<boolean | Error>;
     /**
      * Moves a QUERY result pointer of a BROWSE widget to the specified row.
      *
@@ -136,23 +135,24 @@ export declare class OEAgent {
      *
      * @returns A promise result of the command.
      */
-    repositionToRow(row: number, element: OEElement): promise.Promise<boolean | Error>;
+    repositionToRow(row: number, element: OEElement): Promise<boolean | Error>;
     /**
      * Fire the widget ```CHOOSE``` event.
      *
      * @param element Widget ```OEElement``` instance.
      * @returns A promise result of the command.
      */
-    choose(element: OEElement): promise.Promise<boolean | Error>;
+    choose(element: OEElement): Promise<boolean | Error>;
     /**
      * Sends an ```APPLY``` command with an event to the widget.
      *
      * @param event Event name.
      * @param element Widget ```OEElement``` instance.
+     * @param wait ```true``` to wait the ```APPLY``` event.
      *
      * @returns A promise result of the command.
      */
-    apply(event: OEEvents | string, element: OEElement): promise.Promise<boolean | Error>;
+    apply(event: OEEvents | string, element: OEElement, wait?: boolean): Promise<boolean | Error>;
     /**
      * Gets the widget's informed attribute value.
      *
@@ -161,7 +161,7 @@ export declare class OEAgent {
      *
      * @returns A promise result data of the command.
      */
-    get(attr: OEAttributes | string, element: OEElement): promise.Promise<string>;
+    get(attr: OEAttributes | string, element: OEElement): Promise<string>;
     /**
      * Sets the widget's informed attribute value.
      *
@@ -171,7 +171,7 @@ export declare class OEAgent {
      *
      * @returns A promise result of the command.
      */
-    set(attr: OEAttributes | string, value: string, element: OEElement): promise.Promise<boolean | Error>;
+    set(attr: OEAttributes | string, value: string, element: OEElement): Promise<boolean | Error>;
     /**
      * Selects one or more records of the informed table.
      *
@@ -196,7 +196,7 @@ export declare class OEAgent {
      * // };
      * ```
      */
-    query(table: string, where: string): promise.Promise<Object | Error>;
+    query(table: string, where: string): Promise<Object | Error>;
     /**
      * Creates one or more records in the informed table.
      *
@@ -221,7 +221,7 @@ export declare class OEAgent {
      * oe.create("Department", data);
      * ```
      */
-    create(table: string, data: Object): promise.Promise<boolean | Error>;
+    create(table: string, data: Object): Promise<boolean | Error>;
     /**
      * Updates one or more records of the informed table.
      *
@@ -247,7 +247,7 @@ export declare class OEAgent {
      * oe.update("Department", data, ["DeptCode"]);
      * ```
      */
-    update(table: string, data: Object, index: string[]): promise.Promise<boolean | Error>;
+    update(table: string, data: Object, index: string[]): Promise<boolean | Error>;
     /**
      * Deletes one or more records of the informed table.
      *
@@ -271,7 +271,7 @@ export declare class OEAgent {
      * oe.delete("Department", data, ["DeptCode"]);
      * ```
      */
-    delete(table: string, data: {}, index: string[]): promise.Promise<boolean | Error>;
+    delete(table: string, data: {}, index: string[]): Promise<boolean | Error>;
     /**
      * Sends a ```RUN``` command to open an OE application.
      *
@@ -280,14 +280,14 @@ export declare class OEAgent {
      *
      * @returns A promise result of the command.
      */
-    run(run: string, params?: string[]): promise.Promise<boolean | Error>;
+    run(run: string, params?: string[]): Promise<boolean | Error>;
     /**
      * Sends a ```QUIT``` command to the agent.
      * This will close all comunication with the agent server.
      *
      * @returns A promise result of the command.
      */
-    quit(): promise.Promise<boolean | Error>;
+    quit(): Promise<boolean | Error>;
     /**
      * Tests if an application exists with the informed title.
      * OBS: this uses Robot and will consider all opened applications in the OS.
@@ -297,7 +297,7 @@ export declare class OEAgent {
      *
      * @returns A promise result of the command.
      */
-    windowExists(title: string, timeout?: number): promise.Promise<boolean>;
+    windowExists(title: string, timeout?: number): Promise<boolean>;
     /**
      * Sends keyboard events to an application with the informed title.
      * OBS: this uses Robot and will consider all opened applications in the OS.
@@ -308,32 +308,32 @@ export declare class OEAgent {
      *
      * @returns A promise result of the command.
      */
-    windowSendKeys(title: string, keys: string | string[], timeout?: number): promise.Promise<boolean | Error>;
+    windowSendKeys(title: string, keys: string | string[], timeout?: number): Promise<boolean | Error>;
     /**
      * Sends an "OK" click in an OE alert-box error message.
      * @returns A promise result of the command.
      */
-    alertErrorOK(): promise.Promise<boolean | Error>;
+    alertErrorOK(): Promise<boolean | Error>;
     /**
      * Send an "OK" click in an OE alert-box warning message.
      * @returns A promise result of the command.
      */
-    alertWarningOK(): promise.Promise<boolean | Error>;
+    alertWarningOK(): Promise<boolean | Error>;
     /**
      * Send an "OK" click in an OE alert-box info message.
      * @returns A promise result of the command.
      */
-    alertInfoOK(): promise.Promise<boolean | Error>;
+    alertInfoOK(): Promise<boolean | Error>;
     /**
      * Send a "YES" click in an OE alert-box question message.
      * @returns A promise result of the command.
      */
-    alertQuestionYes(): promise.Promise<boolean | Error>;
+    alertQuestionYes(): Promise<boolean | Error>;
     /**
      * Send a "NO" click in an OE alert-box question message.
      * @returns A promise result of the command.
      */
-    alertQuestionNo(): promise.Promise<boolean | Error>;
+    alertQuestionNo(): Promise<boolean | Error>;
     /**
      * Sends a click to an OE alert-box message.
      *
@@ -343,7 +343,7 @@ export declare class OEAgent {
      *
      * @returns A promise result of the command.
      */
-    alertClick(title: string, button: OEButtons, timeout?: number): promise.Promise<boolean | Error>;
+    alertClick(title: string, button: OEButtons, timeout?: number): Promise<boolean | Error>;
     /**
      * Build the command line to start the agent application.
      *

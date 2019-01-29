@@ -1,5 +1,3 @@
-import { promise } from 'protractor';
-
 import { OEAgent } from './OEAgent';
 import { OEAttributes } from './OEAttributes.enum';
 import { OEEvents } from './OEEvents.enum';
@@ -52,7 +50,7 @@ export class OEElement {
    * Return this widget ```SENSITIVE``` value.
    * @returns A promise result data of the command.
    */
-  public isEnabled(): promise.Promise<boolean> {
+  public isEnabled(): Promise<boolean> {
     return this.get(OEAttributes.SENSITIVE).then((enabled: string) => enabled === 'true' || enabled === 'yes');
   }
 
@@ -60,7 +58,7 @@ export class OEElement {
    * Return this widget ```CHECKED``` value.
    * @returns A promise result data of the command.
    */
-  public isChecked(): promise.Promise<boolean> {
+  public isChecked(): Promise<boolean> {
     return this.get(OEAttributes.CHECKED).then((checked: string) => checked === 'true' || checked === 'yes');
   }
 
@@ -88,7 +86,7 @@ export class OEElement {
    * Returns this widget ```SCREEN-VALUE```.
    * @returns A promise result data of the command.
    */
-  public getValue(): promise.Promise<string> {
+  public getValue(): Promise<string> {
     return this.get(OEAttributes.SCREENVALUE);
   }
 
@@ -151,10 +149,12 @@ export class OEElement {
    * Sends an ```APPLY``` command with an event to this widget.
    *
    * @param event Event name.
+   * @param wait ```true``` to wait the ```APPLY``` event.
+   *
    * @returns This widget ```OEElement``` instance.
    */
-  public apply(apply: OEEvents | string): OEElement {
-    this.oe.apply(apply, this);
+  public apply(apply: OEEvents | string, wait = false): OEElement {
+    this.oe.apply(apply, this, wait);
     return this;
   }
 
@@ -164,7 +164,7 @@ export class OEElement {
    * @param attr Attribute name.
    * @returns A promise result data of the command.
    */
-  public get(attribute: OEAttributes): promise.Promise<string> {
+  public get(attribute: OEAttributes): Promise<string> {
     return this.oe.get(attribute, this);
   }
 
