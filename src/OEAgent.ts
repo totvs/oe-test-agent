@@ -22,7 +22,7 @@ export class OEAgent {
    * @param config Configuration object.
    * @returns A promise result of the agent initialization and connection.
    */
-  public start(config: OEConfig): promise.Promise<boolean | Error> {
+  public start(config: OEConfig): Promise<boolean | Error> {
     return browser.call(() => {
       const cmd = this.buildCommandLine(config);
       const cwd = `${__dirname.replace(/\\/g, '/')}/abl/`;
@@ -40,7 +40,7 @@ export class OEAgent {
       return Promise.race([suc, err]).then((result) => {
         return result['status'] ? this.connect(config.host, config.port) : Promise.reject(result['error']);
       });
-    });
+    }) as Promise<boolean | Error>;
   }
 
   /**
@@ -49,8 +49,8 @@ export class OEAgent {
    * @param host Agent server host name or IP address.
    * @param port Agent server port number.
    */
-  public connect(host: string, port: number): promise.Promise<boolean | Error> {
-    return browser.call(() => this.oeSocket.connect(host, port));
+  public connect(host: string, port: number): Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.connect(host, port)) as Promise<boolean | Error>;
   }
 
   /**
@@ -73,9 +73,15 @@ export class OEAgent {
   public waitForWindow(title: string, timeout = 10000): OEElement {
     const element = new OEElement(this);
 
-    browser.wait(() => {
-      return this.oeSocket.send(true, 'FINDWINDOW', title)
-        .then((id: string) => element.id = parseInt(id));
+    browser.wait(async () => {
+      try {
+        const id = await this.oeSocket.send(true, 'FINDWINDOW', title);
+        element.id = parseInt(id);
+        return true;
+      } catch {
+        await browser.sleep(2000);
+        return false;
+      }
     }, timeout);
 
     return element;
@@ -112,11 +118,16 @@ export class OEAgent {
    */
   public waitForElement(name: string, visible = true, timeout = 10000, parent?: OEElement): OEElement {
     const element = new OEElement(this);
-    const parentId = parent ? parent.id : '';
 
-    browser.wait(() => {
-      return this.oeSocket.send(true, 'FINDELEMENT', name, visible, parentId)
-        .then((id: string) => (element.id = parseInt(id))).catch(() => browser.sleep(2000));
+    browser.wait(async () => {
+      try {
+        const id = await this.oeSocket.send(true, 'FINDELEMENT', name, visible, parent ? parent.id : '');
+        element.id = parseInt(id);
+        return true;
+      } catch {
+        await browser.sleep(2000);
+        return false;
+      }
     }, timeout);
 
     return element;
@@ -134,10 +145,9 @@ export class OEAgent {
    */
   public findElement(name: string, visible = true, parent?: OEElement): OEElement {
     const element = new OEElement(this);
-    const parentId = parent ? parent.id : '';
 
     browser.call(() => {
-      return this.oeSocket.send(true, 'FINDELEMENT', name, visible, parentId)
+      return this.oeSocket.send(true, 'FINDELEMENT', name, visible, parent ? parent.id : '')
         .then((id: string) => (element.id = parseInt(id)));
     });
 
@@ -157,10 +167,9 @@ export class OEAgent {
    */
   public findElementByAttribute(attribute: OEAttributes, value: string, visible = true, parent?: OEElement): OEElement {
     const element = new OEElement(this);
-    const parentId = parent ? parent.id : '';
 
     browser.call(() => {
-      return this.oeSocket.send(true, 'FINDELEMENTBYATTRIBUTE', attribute, value, visible, parentId)
+      return this.oeSocket.send(true, 'FINDELEMENTBYATTRIBUTE', attribute, value, visible, parent ? parent.id : '')
         .then((id: string) => (element.id = parseInt(id)));
     });
 
@@ -173,8 +182,8 @@ export class OEAgent {
    * @param element Widget ```OEElement``` instance.
    * @returns A promise result of the command.
    */
-  public clear(element: OEElement): promise.Promise<boolean | Error> {
-    return browser.call(() => this.oeSocket.send(true, 'CLEAR', element.id).then(() => true));
+  public clear(element: OEElement): Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'CLEAR', element.id).then(() => true)) as Promise<boolean | Error>;
   }
 
   /**
@@ -185,8 +194,8 @@ export class OEAgent {
    *
    * @returns A promise result of the command.
    */
-  public sendKeys(value: string | number, element: OEElement): promise.Promise<boolean | Error> {
-    return browser.call(() => this.oeSocket.send(true, 'SENDKEYS', element.id, value).then(() => true));
+  public sendKeys(value: string | number, element: OEElement): Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'SENDKEYS', element.id, value).then(() => true)) as Promise<boolean | Error>;
   }
 
   /**
@@ -197,8 +206,8 @@ export class OEAgent {
    *
    * @returns A promise result of the command.
    */
-  public check(check: boolean, element: OEElement): promise.Promise<boolean | Error> {
-    return browser.call(() => this.oeSocket.send(true, 'CHECK', element.id, check).then(() => true));
+  public check(check: boolean, element: OEElement): Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'CHECK', element.id, check).then(() => true)) as Promise<boolean | Error>;
   }
 
   /**
@@ -210,8 +219,8 @@ export class OEAgent {
    *
    * @returns A promise result of the command.
    */
-  public select(value: string | number, partial = false, element: OEElement): promise.Promise<boolean | Error> {
-    return browser.call(() => this.oeSocket.send(true, 'SELECT', element.id, value, partial).then(() => true));
+  public select(value: string | number, partial = false, element: OEElement): Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'SELECT', element.id, value, partial).then(() => true)) as Promise<boolean | Error>;
   }
 
   /**
@@ -222,8 +231,8 @@ export class OEAgent {
    *
    * @returns A promise result of the command.
    */
-  public selectRow(row: number, element: OEElement): promise.Promise<boolean | Error> {
-    return browser.call(() => this.oeSocket.send(true, 'SELECTROW', element.id, row).then(() => true));
+  public selectRow(row: number, element: OEElement): Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'SELECTROW', element.id, row).then(() => true)) as Promise<boolean | Error>;
   }
 
   /**
@@ -234,8 +243,8 @@ export class OEAgent {
    *
    * @returns A promise result of the command.
    */
-  public repositionToRow(row: number, element: OEElement): promise.Promise<boolean | Error> {
-    return browser.call(() => this.oeSocket.send(true, 'REPOSITIONTOROW', element.id, row).then(() => true));
+  public repositionToRow(row: number, element: OEElement): Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'REPOSITIONTOROW', element.id, row).then(() => true)) as Promise<boolean | Error>;
   }
 
   /**
@@ -244,8 +253,8 @@ export class OEAgent {
    * @param element Widget ```OEElement``` instance.
    * @returns A promise result of the command.
    */
-  public choose(element: OEElement): promise.Promise<boolean | Error> {
-    return browser.call(() => this.oeSocket.send(false, 'CHOOSE', element.id).then(() => browser.sleep(500)).then(() => true));
+  public choose(element: OEElement): Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(false, 'CHOOSE', element.id).then(() => browser.sleep(1000)).then(() => true)) as Promise<boolean | Error>;
   }
 
   /**
@@ -253,11 +262,12 @@ export class OEAgent {
    *
    * @param event Event name.
    * @param element Widget ```OEElement``` instance.
+   * @param wait ```true``` to wait the ```APPLY``` event.
    *
    * @returns A promise result of the command.
    */
-  public apply(event: OEEvents | string, element: OEElement): promise.Promise<boolean | Error> {
-    return browser.call(() => this.oeSocket.send(false, 'APPLY', element.id, event).then(() => browser.sleep(500)).then(() => true));
+  public apply(event: OEEvents | string, element: OEElement, wait = false): Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(wait, 'APPLY', element.id, event).then(() => browser.sleep(1000)).then(() => true)) as Promise<boolean | Error>;
   }
 
   /**
@@ -268,8 +278,8 @@ export class OEAgent {
    *
    * @returns A promise result data of the command.
    */
-  public get(attr: OEAttributes | string, element: OEElement): promise.Promise<string> {
-    return browser.call(() => this.oeSocket.send(true, 'GET', element.id, attr));
+  public get(attr: OEAttributes | string, element: OEElement): Promise<string> {
+    return browser.call(() => this.oeSocket.send(true, 'GET', element.id, attr)) as Promise<string>;
   }
 
   /**
@@ -281,8 +291,8 @@ export class OEAgent {
    *
    * @returns A promise result of the command.
    */
-  public set(attr: OEAttributes | string, value: string, element: OEElement): promise.Promise<boolean | Error> {
-    return browser.call(() => this.oeSocket.send(true, 'SET', element.id, attr, value).then(() => true));
+  public set(attr: OEAttributes | string, value: string, element: OEElement): Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'SET', element.id, attr, value).then(() => true)) as Promise<boolean | Error>;
   }
 
   /**
@@ -309,8 +319,8 @@ export class OEAgent {
    * // };
    * ```
    */
-  public query(table: string, where: string): promise.Promise<Object | Error> {
-    return browser.call(() => this.oeSocket.send(true, 'QUERY', table, where).then((result) => JSON.parse(result)));
+  public query(table: string, where: string): Promise<Object | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'QUERY', table, where).then((result) => JSON.parse(result))) as Promise<boolean | Error>;
   }
 
   /**
@@ -337,8 +347,8 @@ export class OEAgent {
    * oe.create("Department", data);
    * ```
    */
-  public create(table: string, data: Object): promise.Promise<boolean | Error> {
-    return browser.call(() => this.oeSocket.send(true, 'CREATE', table, JSON.stringify(data)).then(() => true));
+  public create(table: string, data: Object): Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'CREATE', table, JSON.stringify(data)).then(() => true)) as Promise<boolean | Error>;
   }
 
   /**
@@ -366,8 +376,8 @@ export class OEAgent {
    * oe.update("Department", data, ["DeptCode"]);
    * ```
    */
-  public update(table: string, data: Object, index: string[]): promise.Promise<boolean | Error> {
-    return browser.call(() => this.oeSocket.send(true, 'UPDATE', table, JSON.stringify(data), JSON.stringify(index)).then(() => true));
+  public update(table: string, data: Object, index: string[]): Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'UPDATE', table, JSON.stringify(data), JSON.stringify(index)).then(() => true)) as Promise<boolean | Error>;
   }
 
   /**
@@ -393,8 +403,8 @@ export class OEAgent {
    * oe.delete("Department", data, ["DeptCode"]);
    * ```
    */
-  public delete(table: string, data: {}, index: string[]): promise.Promise<boolean | Error> {
-    return browser.call(() => this.oeSocket.send(true, 'DELETE', table, JSON.stringify(data), JSON.stringify(index)).then(() => true));
+  public delete(table: string, data: {}, index: string[]): Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'DELETE', table, JSON.stringify(data), JSON.stringify(index)).then(() => true)) as Promise<boolean | Error>;
   }
 
   /**
@@ -405,8 +415,8 @@ export class OEAgent {
    *
    * @returns A promise result of the command.
    */
-  public run(run: string, params: string[] = []): promise.Promise<boolean | Error> {
-    return browser.call(() => this.oeSocket.send(false, 'RUN', run, params).then(() => browser.sleep(500))).then(() => true);
+  public run(run: string, params: string[] = []): Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(false, 'RUN', run, params).then(() => browser.sleep(1000))).then(() => true) as Promise<boolean | Error>;
   }
 
   /**
@@ -415,8 +425,10 @@ export class OEAgent {
    *
    * @returns A promise result of the command.
    */
-  public quit(): promise.Promise<boolean | Error> {
-    return browser.call(() => this.oeSocket.send(false, `QUIT`).then(() => browser.sleep(500))).then(() => true);
+  public quit(): Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(false, `QUIT`)
+      .then(() => browser.sleep(2000)))
+      .then(() => true) as Promise<boolean | Error>;
   }
 
   /**
@@ -428,7 +440,7 @@ export class OEAgent {
    *
    * @returns A promise result of the command.
    */
-  public windowExists(title: string, timeout = 10000): promise.Promise<boolean> {
+  public windowExists(title: string, timeout = 10000): Promise<boolean> {
     return browser.call(() => new Promise((resolve) => {
       let winExists = true;
 
@@ -439,7 +451,7 @@ export class OEAgent {
       }
 
       resolve(winExists);
-    }));
+    })) as Promise<boolean>;
   }
 
   /**
@@ -452,10 +464,12 @@ export class OEAgent {
    *
    * @returns A promise result of the command.
    */
-  public windowSendKeys(title: string, keys: string | string[], timeout = 10000): promise.Promise<boolean | Error> {
+  public windowSendKeys(title: string, keys: string | string[], timeout = 10000): Promise<boolean | Error> {
     return browser.call(() => new Promise((resolve, reject) => {
       keys = Array.isArray(keys) ? keys : [keys];
       keys = keys.join('');
+
+      OEUtils.consoleLogMessage(`Using Robot to send keyboard events "${keys}" to a window with title "${title}"`, MessageType.INFO);
 
       try {
         execSync(`${__dirname.replace(/\\/g, '/')}/robot/Robot.exe -t ${timeout} -w "${title}" -k ${keys}`);
@@ -463,14 +477,14 @@ export class OEAgent {
       } catch (error) {
         reject(error);
       }
-    }));
+    })) as Promise<boolean | Error>;
   }
 
   /**
    * Sends an "OK" click in an OE alert-box error message.
    * @returns A promise result of the command.
    */
-  public alertErrorOK(): promise.Promise<boolean | Error> {
+  public alertErrorOK(): Promise<boolean | Error> {
     return this.alertClick('Error', OEButtons.OK);
   }
 
@@ -478,7 +492,7 @@ export class OEAgent {
    * Send an "OK" click in an OE alert-box warning message.
    * @returns A promise result of the command.
    */
-  public alertWarningOK(): promise.Promise<boolean | Error> {
+  public alertWarningOK(): Promise<boolean | Error> {
     return this.alertClick('Warning', OEButtons.OK);
   }
 
@@ -486,7 +500,7 @@ export class OEAgent {
    * Send an "OK" click in an OE alert-box info message.
    * @returns A promise result of the command.
    */
-  public alertInfoOK(): promise.Promise<boolean | Error> {
+  public alertInfoOK(): Promise<boolean | Error> {
     return this.alertClick('Information', OEButtons.OK);
   }
 
@@ -494,7 +508,7 @@ export class OEAgent {
    * Send a "YES" click in an OE alert-box question message.
    * @returns A promise result of the command.
    */
-  public alertQuestionYes(): promise.Promise<boolean | Error> {
+  public alertQuestionYes(): Promise<boolean | Error> {
     return this.alertClick('Question', OEButtons.YES);
   }
 
@@ -502,7 +516,7 @@ export class OEAgent {
    * Send a "NO" click in an OE alert-box question message.
    * @returns A promise result of the command.
    */
-  public alertQuestionNo(): promise.Promise<boolean | Error> {
+  public alertQuestionNo(): Promise<boolean | Error> {
     return this.alertClick('Question', OEButtons.NO);
   }
 
@@ -515,15 +529,17 @@ export class OEAgent {
    *
    * @returns A promise result of the command.
    */
-  public alertClick(title: string, button: OEButtons, timeout = 10000): promise.Promise<boolean | Error> {
+  public alertClick(title: string, button: OEButtons, timeout = 10000): Promise<boolean | Error> {
     return browser.call(() => new Promise((resolve, reject) => {
+      OEUtils.consoleLogMessage(`Using Robot to simulate a "${button}" click at the alert-box message with title "${title}"`, MessageType.INFO);
+
       try {
         execSync(`${__dirname.replace(/\\/g, '/')}/robot/Robot.exe -t ${timeout} -w "${title}" -b ${button}`);
         resolve(true);
       } catch (error) {
         reject(error);
       }
-    }));
+    })) as Promise<boolean | Error>;
   }
 
   /**

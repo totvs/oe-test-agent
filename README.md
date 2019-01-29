@@ -12,7 +12,7 @@
 
 The **OE Test Agent** was developed in order to make our e2e test for OpenEdge applications easier.
 
-Our dev team was already familiar with **Protractor**, so we took advantage of that to create this project using only *socket* communication between JavaScript and OE and an external tool - also created by us - called ["Robot"](#robot.exe).
+Our dev team was already familiar with **Protractor**, so we took advantage of that to create this project using only *socket* communication between JavaScript and OE and an external tool - also created by us - called ["Robot"](#robotexe).
 
 # Installation
 
@@ -22,8 +22,17 @@ npm i oe-test-agent
 
 # Changelog
 
-- **1.0.1**: Documentation.
-- **1.0.2**: README.md changes.
+- **1.0.1**:
+  - Documentation.
+- **1.0.2**:
+  - README.md changes.
+- **1.0.3**:
+  - Solved a bug when searching for elements using ```waitForElement``` or ```findElement```.
+  - When executing ```selectRow``` for a empty BROWSE, no errors will be throw.
+  - Improvements on the socket communication.
+  - Changed return type to JavaScript's ```Promise``` instead of Protractor's ```promise.Promise```.
+  - Included console messages when using "Robot".
+  - Will set profiler's file only if none was defined.
 
 
 # Want to help?

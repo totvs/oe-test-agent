@@ -36,13 +36,23 @@ RUN OEAgent.p (INPUT oConfig:GetHost(), INPUT oConfig:GetPort(), INPUT oConfig:G
 ------------------------------------------------------------------------------*/
 PROCEDURE EnableCoverage PRIVATE:
     DEFINE INPUT PARAMETER cOutDir AS CHARACTER NO-UNDO.
-    DEFINE VARIABLE nPid AS INTEGER NO-UNDO.
     
-    RUN GetCurrentProcessId(OUTPUT nPid).
-
-    SESSION:DEBUG-ALERT = YES.
-    PROFILER:ENABLED = YES.
-    PROFILER:FILE-NAME = cOutDir + "/cov" + STRING(nPid) + ".out".
+    DEFINE VARIABLE cFile  AS CHARACTER NO-UNDO.
+    DEFINE VARIABLE dToday AS DATE      NO-UNDO.
+    
+    IF  NOT PROFILER:ENABLED OR PROFILER:FILE-NAME = ? OR PROFILER:FILE-NAME = "" THEN
+    DO:
+        dToday = TODAY.
+        cFile = cOutDir + "/cov-".
+        cFile = cFile + STRING(YEAR(dToday),"9999") + "-".
+        cFile = cFile + STRING(MONTH(dToday),"99") + "-".
+        cFile = cFile + STRING(DAY(dToday),"99") + "-".
+        cFile = cFile + REPLACE(STRING(TIME, "HH:MM:SS"),":","-") + ".out".
+        
+        PROFILER:ENABLED = YES.
+        PROFILER:FILE-NAME = cFile.
+    END.
+    
     PROFILER:COVERAGE = YES.
     PROFILER:PROFILING = YES.
 END PROCEDURE.
@@ -70,10 +80,3 @@ PROCEDURE RunStartup PRIVATE:
         RUN RunApplication IN hUtils (INPUT cStartup, INPUT cParameters).
 END PROCEDURE.
 
-/*------------------------------------------------------------------------------
- Purpose: Return the PID number of this application.
- Notes:
-------------------------------------------------------------------------------*/
-PROCEDURE GetCurrentProcessId EXTERNAL "kernel32.dll":
-    DEFINE RETURN PARAMETER nProcessId AS LONG NO-UNDO.
-END PROCEDURE.
