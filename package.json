@@ -1,6 +1,6 @@
 {
   "name": "oe-test-agent",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Progress utility for e2e tests with Protractor",
   "author": "TOTVS",
   "license": "ISC",
@@ -36,7 +36,6 @@
   },
   "dependencies": {
     "colors": "^1.3.2",
-    "net-retry-connect": "^0.1.1",
     "protractor": "^5.4.1",
     "webdriver-manager": "^12.1.0"
   }

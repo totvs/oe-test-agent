@@ -1,3 +1,4 @@
+import { Keys } from './Keys.enum';
 import { OEAttributes } from './OEAttributes.enum';
 import { OEButtons } from './OEButtons.enum';
 import { OEConfig } from './OEConfig';
@@ -10,6 +11,10 @@ import { OESocket } from './OESocket';
  */
 export declare class OEAgent {
     private oeSocket;
+    /**
+     * Default TIMEOUT value for waiting events.
+     */
+    static readonly DEFAULT_TIMEOUT = 5000;
     constructor(oeSocket?: OESocket);
     /**
      * Starts the agent application.
@@ -308,7 +313,7 @@ export declare class OEAgent {
      *
      * @returns A promise result of the command.
      */
-    windowSendKeys(title: string, keys: string | string[], timeout?: number): Promise<boolean | Error>;
+    windowSendKeys(title: string, keys: Keys | Keys[], timeout?: number): Promise<boolean | Error>;
     /**
      * Sends an "OK" click in an OE alert-box error message.
      * @returns A promise result of the command.

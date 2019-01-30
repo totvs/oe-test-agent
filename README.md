@@ -22,11 +22,13 @@ npm i oe-test-agent
 
 # Changelog
 
-- **1.0.1**:
+## **1.0.1**:
   - Documentation.
-- **1.0.2**:
+
+## **1.0.2**:
   - README.md changes.
-- **1.0.3**:
+
+## **1.0.3**:
   - Solved a bug when searching for elements using ```waitForElement``` or ```findElement```.
   - When executing ```selectRow``` for a empty BROWSE, no errors will be throw.
   - Improvements on the socket communication.
@@ -34,6 +36,11 @@ npm i oe-test-agent
   - Included console messages when using "Robot".
   - Will set profiler's file only if none was defined.
 
+## **1.0.4**:
+  - Removed unused dependency.
+  - Created ```Keys``` enum - to use with ```windowSendKeys```.
+  - Created static attribute DEFAULT_TIMEOUT - to use with ```waitFor``` methods.
+  - ```ENTRY``` event is now fired when using ```select``` and ```check```.
 
 # Want to help?
 

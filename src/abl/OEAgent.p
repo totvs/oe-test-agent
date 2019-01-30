@@ -341,6 +341,9 @@ PROCEDURE Choose PRIVATE:
         cOutput = "NOK|Element ~"" + hElement:NAME + "~" is disabled!".
         RETURN.
     END.
+    
+    /* Force focus to the WIDGET */
+    APPLY "ENTRY" TO hElement.
 
     RUN Apply(INPUT cElement, INPUT "CHOOSE", OUTPUT cOutput).
 END PROCEDURE.
@@ -604,6 +607,9 @@ PROCEDURE Check PRIVATE:
         RETURN.
     END.
 
+    /* Force focus to the WIDGET so ENTRY and LEAVE events are fired */
+    APPLY "ENTRY" TO hElement.
+    
     hElement:CHECKED = lChecked NO-ERROR.
 
     IF  ERROR-STATUS:ERROR THEN
@@ -644,6 +650,9 @@ PROCEDURE Select PRIVATE:
         cOutput = "NOK|Element ~"" + hElement:NAME + "~" is disabled!".
         RETURN.
     END.
+    
+    /* Force focus to the WIDGET so ENTRY and LEAVE events are fired */
+    APPLY "ENTRY" TO hElement.
 
     IF  lPartial THEN
     DO:
@@ -652,7 +661,6 @@ PROCEDURE Select PRIVATE:
         DO  nItem = 1 TO nItems:
             IF  ENTRY(nItem,hElement:LIST-ITEMS) MATCHES ("*" + cValue + "*") THEN
             DO:
-                APPLY "ENTRY" TO hElement.
                 hElement:SCREEN-VALUE = ENTRY(nItem,hElement:LIST-ITEMS).
                 cOutput = "OK".
                 LEAVE.
@@ -661,7 +669,6 @@ PROCEDURE Select PRIVATE:
     END.
     ELSE
     DO:
-        APPLY "ENTRY" TO hElement.
         hElement:SCREEN-VALUE = cValue.
         cOutput = "OK".
     END.

@@ -1,6 +1,7 @@
 import { exec, execSync } from 'child_process';
-import { browser, promise } from 'protractor';
+import { browser } from 'protractor';
 
+import { Keys } from './Keys.enum';
 import { OEAttributes } from './OEAttributes.enum';
 import { OEButtons } from './OEButtons.enum';
 import { OEConfig } from './OEConfig';
@@ -14,6 +15,11 @@ import { MessageType, OEUtils } from './OEUtils';
  * Progress OpenEdge applications.
  */
 export class OEAgent {
+  /**
+   * Default TIMEOUT value for waiting events.
+   */
+  public static readonly DEFAULT_TIMEOUT = 5000;
+
   constructor(private oeSocket = new OESocket()) {}
 
   /**
@@ -70,7 +76,7 @@ export class OEAgent {
    *
    * @returns Window ```OEElement``` instance.
    */
-  public waitForWindow(title: string, timeout = 10000): OEElement {
+  public waitForWindow(title: string, timeout = OEAgent.DEFAULT_TIMEOUT): OEElement {
     const element = new OEElement(this);
 
     browser.wait(async () => {
@@ -116,7 +122,7 @@ export class OEAgent {
    *
    * @returns Widget ```OEElement``` instance.
    */
-  public waitForElement(name: string, visible = true, timeout = 10000, parent?: OEElement): OEElement {
+  public waitForElement(name: string, visible = true, timeout = OEAgent.DEFAULT_TIMEOUT, parent?: OEElement): OEElement {
     const element = new OEElement(this);
 
     browser.wait(async () => {
@@ -440,9 +446,11 @@ export class OEAgent {
    *
    * @returns A promise result of the command.
    */
-  public windowExists(title: string, timeout = 10000): Promise<boolean> {
+  public windowExists(title: string, timeout = OEAgent.DEFAULT_TIMEOUT): Promise<boolean> {
     return browser.call(() => new Promise((resolve) => {
       let winExists = true;
+
+      OEUtils.consoleLogMessage(`(Robot) Searching "${title}" window`, MessageType.INFO);
 
       try {
         execSync(`${__dirname.replace(/\\/g, '/')}/robot/Robot.exe -t ${timeout} -w "${title}"`);
@@ -464,15 +472,15 @@ export class OEAgent {
    *
    * @returns A promise result of the command.
    */
-  public windowSendKeys(title: string, keys: string | string[], timeout = 10000): Promise<boolean | Error> {
+  public windowSendKeys(title: string, keys: Keys | Keys[], timeout = OEAgent.DEFAULT_TIMEOUT): Promise<boolean | Error> {
     return browser.call(() => new Promise((resolve, reject) => {
       keys = Array.isArray(keys) ? keys : [keys];
-      keys = keys.join('');
+      const allKeys = keys.join('');
 
-      OEUtils.consoleLogMessage(`Using Robot to send keyboard events "${keys}" to a window with title "${title}"`, MessageType.INFO);
+      OEUtils.consoleLogMessage(`(Robot) Sending keyboard events "${allKeys}" to "${title}" window`, MessageType.INFO);
 
       try {
-        execSync(`${__dirname.replace(/\\/g, '/')}/robot/Robot.exe -t ${timeout} -w "${title}" -k ${keys}`);
+        execSync(`${__dirname.replace(/\\/g, '/')}/robot/Robot.exe -t ${timeout} -w "${title}" -k ${allKeys}`);
         resolve(true);
       } catch (error) {
         reject(error);
@@ -529,9 +537,9 @@ export class OEAgent {
    *
    * @returns A promise result of the command.
    */
-  public alertClick(title: string, button: OEButtons, timeout = 10000): Promise<boolean | Error> {
+  public alertClick(title: string, button: OEButtons, timeout = OEAgent.DEFAULT_TIMEOUT): Promise<boolean | Error> {
     return browser.call(() => new Promise((resolve, reject) => {
-      OEUtils.consoleLogMessage(`Using Robot to simulate a "${button}" click at the alert-box message with title "${title}"`, MessageType.INFO);
+      OEUtils.consoleLogMessage(`(Robot) Sending "${button}" click to "${title}" alert-box message`, MessageType.INFO);
 
       try {
         execSync(`${__dirname.replace(/\\/g, '/')}/robot/Robot.exe -t ${timeout} -w "${title}" -b ${button}`);
