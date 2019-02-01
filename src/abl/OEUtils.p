@@ -1,13 +1,13 @@
 
 /*------------------------------------------------------------------------
     File        : OEUtils.p
-    Purpose     : 
+    Purpose     : Utilities for "OE Test Agent" application. 
 
     Syntax      :
 
-    Description : 
+    Description : "OE Test Agent" Utils
 
-    Author(s)   : 
+    Author(s)   : Rubens Dos Santos Filho
     Created     : Thu Nov 08 17:19:27 BRST 2018
     Notes       :
   ----------------------------------------------------------------------*/
@@ -16,19 +16,9 @@ USING Progress.Json.ObjectModel.JsonArray FROM PROPATH.
 USING Progress.Json.ObjectModel.JsonObject FROM PROPATH.
 USING Progress.Json.ObjectModel.ObjectModelParser FROM PROPATH.
 
-/* ***************************  Definitions  ************************** */
-
-
-/* ********************  Preprocessor Definitions  ******************** */
-
-
-/* ***************************  Main Block  *************************** */
-
-
 /* **********************  Internal Procedures  *********************** */
-
 /*------------------------------------------------------------------------------
- Purpose:
+ Purpose: Extract the commands sent from client by the socket communication.
  Notes:
 ------------------------------------------------------------------------------*/
 PROCEDURE GetSocketCommands:
@@ -56,7 +46,7 @@ PROCEDURE GetSocketCommands:
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
- Purpose:
+ Purpose: Run a PROCEDURE or application.
  Notes:
 ------------------------------------------------------------------------------*/
 PROCEDURE RunApplication:
@@ -98,7 +88,7 @@ PROCEDURE MouseClick:
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
- Purpose:
+ Purpose: Parse a character JSON to a JsonObject instance.
  Notes:
 ------------------------------------------------------------------------------*/
 PROCEDURE ParseChar2JsonObject:
@@ -115,7 +105,7 @@ PROCEDURE ParseChar2JsonObject:
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
- Purpose:
+ Purpose: Parse a character JSON to a JsonArray instance.
  Notes:
 ------------------------------------------------------------------------------*/
 PROCEDURE ParseChar2JsonArray:
@@ -132,7 +122,7 @@ PROCEDURE ParseChar2JsonArray:
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
- Purpose:
+ Purpose: Emits info messages on client log.
  Notes:
 ------------------------------------------------------------------------------*/
 PROCEDURE DoLog:
@@ -143,6 +133,10 @@ PROCEDURE DoLog:
     "1"="1" NO-ERROR. /* Clears ERROR-STATUS */
 END PROCEDURE.
 
+/*------------------------------------------------------------------------------
+ Purpose: USER32 utility.
+ Notes:
+------------------------------------------------------------------------------*/
 PROCEDURE PostMessageA EXTERNAL "user32.dll":
     DEFINE INPUT  PARAMETER hwnd    AS LONG.
     DEFINE INPUT  PARAMETER umsg    AS LONG.

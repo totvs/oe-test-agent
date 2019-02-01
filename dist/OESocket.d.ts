@@ -3,6 +3,7 @@ import { promise } from 'protractor';
  * Provides a socket communication with the agent server.
  */
 export declare class OESocket {
+    private retries;
     private isConnected;
     private socket;
     constructor();
@@ -37,7 +38,6 @@ export declare class OESocket {
      * Event fired when a error occurs at with the agent server communication.
      *
      * @param connect Connection function (to retry).
-     * @param retries Maximum of connection retries.
      * @param error Error object that was raised.
      * @param reject The reject function of the connection Promise.
      */

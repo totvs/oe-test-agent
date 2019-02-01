@@ -89,6 +89,13 @@ export declare class OEAgent {
      */
     findElementByAttribute(attribute: OEAttributes, value: string, visible?: boolean, parent?: OEElement): OEElement;
     /**
+     * Returns if the widget ```OEElement``` is valid.
+  
+     * @param element Widget ```OEElement``` instance.
+     * @returns A promise result of the command.
+     */
+    isElementValid(element: OEElement): Promise<boolean>;
+    /**
      * Clears the widget ```SCREEN-VALUE```.
      *
      * @param element Widget ```OEElement``` instance.
@@ -142,14 +149,14 @@ export declare class OEAgent {
      */
     repositionToRow(row: number, element: OEElement): Promise<boolean | Error>;
     /**
-     * Fire the widget ```CHOOSE``` event.
+     * Applies a ```CHOOSE``` event to the widget.
      *
      * @param element Widget ```OEElement``` instance.
      * @returns A promise result of the command.
      */
     choose(element: OEElement): Promise<boolean | Error>;
     /**
-     * Sends an ```APPLY``` command with an event to the widget.
+     * Applies an event to the widget.
      *
      * @param event Event name.
      * @param element Widget ```OEElement``` instance.
@@ -278,7 +285,7 @@ export declare class OEAgent {
      */
     delete(table: string, data: {}, index: string[]): Promise<boolean | Error>;
     /**
-     * Sends a ```RUN``` command to open an OE application.
+     * Runs a ```PROCEDURE``` command or open an OE application.
      *
      * @param run OE application path (full or partial according to PROPATH).
      * @param params Application input parameters.
@@ -287,7 +294,7 @@ export declare class OEAgent {
      */
     run(run: string, params?: string[]): Promise<boolean | Error>;
     /**
-     * Sends a ```QUIT``` command to the agent.
+     * Quits the agent application.
      * This will close all comunication with the agent server.
      *
      * @returns A promise result of the command.
@@ -357,4 +364,8 @@ export declare class OEAgent {
      */
     private buildCommandLine;
 }
+/**
+ * ```OEAgent``` singleton instance.
+ */
+export declare const oeAgent: OEAgent;
 //# sourceMappingURL=OEAgent.d.ts.map
