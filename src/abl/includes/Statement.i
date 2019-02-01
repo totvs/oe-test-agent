@@ -12,19 +12,10 @@
     Notes       :
   ----------------------------------------------------------------------*/
 
-/* ***************************  Definitions  ************************** */
-
-
-/* ********************  Preprocessor Definitions  ******************** */
-
-
-/* ***************************  Main Block  *************************** */
-
-
 /* **********************  Internal Procedures  *********************** */
 
 /*------------------------------------------------------------------------------
- Purpose: Efetua o ASSIGN do CREATE/UPDATE dos campos dinamicamente.
+ Purpose: 
  Notes:
 ------------------------------------------------------------------------------*/
 PROCEDURE AssignStatementFields PRIVATE:
@@ -60,7 +51,7 @@ PROCEDURE AssignStatementFields PRIVATE:
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
- Purpose: Montra o filtro SQL conforme o indice e registro informados.
+ Purpose: 
  Notes:
 ------------------------------------------------------------------------------*/
 PROCEDURE GetStatementWhereClause PRIVATE:

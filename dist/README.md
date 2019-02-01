@@ -42,6 +42,12 @@ npm i oe-test-agent
   - Created static attribute DEFAULT_TIMEOUT - to use with ```waitFor``` methods.
   - ```ENTRY``` event is now fired when using ```select``` and ```check```.
 
+## **1.0.5**:
+
+  - Socket communication improvements.
+  - Created a method to return if an ```OEElement``` is valid or not.
+  - Created an ```OEAgent``` singleton instance to use at e2e that uses Page Objects.
+
 # Want to help?
 
 You're welcome to open an issue to report bugs, suggest improvements on this GitHub or to submit a PR.

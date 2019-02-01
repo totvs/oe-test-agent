@@ -7,6 +7,10 @@ export class OEElement {
 
   constructor(private oe: OEAgent) {}
 
+  public isValid(): Promise<boolean> {
+    return this.oe.isElementValid(this);
+  }
+
   /**
    * Wait until an OE child widget is found with the informed name attribute or
    * a timeout error is raised.

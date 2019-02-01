@@ -1,12 +1,12 @@
 /*------------------------------------------------------------------------
     File        : OEAgent.p
-    Purpose     : Communication agent between Protractor and OE
+    Purpose     : "OE Test Agent" main application.
 
     Syntax      :
 
     Description : OE Test Agent
 
-    Author(s)   : TOTVS S/A
+    Author(s)   : Rubens Dos Santos Filho
     Notes       :
   ----------------------------------------------------------------------*/
 
@@ -26,9 +26,6 @@ DEFINE INPUT PARAMETER cCodePage AS CHARACTER NO-UNDO.
 DEFINE VARIABLE hWindow  AS HANDLE    NO-UNDO.
 DEFINE VARIABLE cMessage AS CHARACTER NO-UNDO.
 DEFINE VARIABLE hUtils   AS HANDLE    NO-UNDO.
-
-/* ********************  Preprocessor Definitions  ******************** */
-
 
 /* ***************************  Main Block  *************************** */
 
@@ -216,8 +213,8 @@ PROCEDURE AgentIO PRIVATE:
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
- Purpose: Find a WINDOW in all opened applications and return its handle.
- Notes: The search criteria will consider the window's title.
+ Purpose: Searches for an OE window with the informed title.
+ Notes:
 ------------------------------------------------------------------------------*/
 PROCEDURE FindWindow PRIVATE:
     DEFINE INPUT  PARAMETER cTitle  AS CHARACTER NO-UNDO.
@@ -255,9 +252,8 @@ PROCEDURE FindWindow PRIVATE:
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
- Purpose: Find an element, in all applications or inside another element,
-          and return its handle.
- Notes: The search criteria will considerar the element's name.
+ Purpose: Searches for an OE widget with the informed name attribute.
+ Notes:
 ------------------------------------------------------------------------------*/
 PROCEDURE FindElement PRIVATE:
     DEFINE INPUT  PARAMETER cName    AS CHARACTER NO-UNDO.
@@ -287,9 +283,8 @@ PROCEDURE FindElement PRIVATE:
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
- Purpose: Find an element, in all applications or inside another element,
-          and return its handle.
- Notes: The search criteria will considerar the element's attribute and value.
+ Purpose: Search for an OE widget with the value of the informed attribute.
+ Notes:
 ------------------------------------------------------------------------------*/
 PROCEDURE FindElementByAttribute PRIVATE:
     DEFINE INPUT  PARAMETER cAttribute AS CHARACTER NO-UNDO.
@@ -318,79 +313,7 @@ PROCEDURE FindElementByAttribute PRIVATE:
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
- Purpose: Apply a CHOOSE event to an element.
- Notes:
-------------------------------------------------------------------------------*/
-PROCEDURE Choose PRIVATE:
-    DEFINE INPUT  PARAMETER cElement AS CHARACTER NO-UNDO.
-    DEFINE OUTPUT PARAMETER cOutput  AS CHARACTER NO-UNDO INITIAL ?.
-
-    DEFINE VARIABLE hElement AS HANDLE  NO-UNDO.
-    DEFINE VARIABLE lWait    AS LOGICAL NO-UNDO INITIAL TRUE.
-
-    IF  cElement <> ? AND cElement <> "" THEN
-    DO:
-        RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
-
-        IF  RETURN-VALUE = "NOK" THEN
-            RETURN.
-    END.
-
-    IF  NOT hElement:SENSITIVE THEN
-    DO:
-        cOutput = "NOK|Element ~"" + hElement:NAME + "~" is disabled!".
-        RETURN.
-    END.
-    
-    /* Force focus to the WIDGET */
-    APPLY "ENTRY" TO hElement.
-
-    RUN Apply(INPUT cElement, INPUT "CHOOSE", OUTPUT cOutput).
-END PROCEDURE.
-
-/*------------------------------------------------------------------------------
- Purpose: Apply a event to an element.
- Notes:
-------------------------------------------------------------------------------*/
-PROCEDURE Apply PRIVATE:
-    DEFINE INPUT  PARAMETER cElement AS CHARACTER NO-UNDO.
-    DEFINE INPUT  PARAMETER cEvent   AS CHARACTER NO-UNDO.
-    DEFINE OUTPUT PARAMETER cOutput  AS CHARACTER NO-UNDO INITIAL "OK".
-
-    DEFINE VARIABLE hElement AS HANDLE  NO-UNDO.
-    DEFINE VARIABLE lWait    AS LOGICAL NO-UNDO INITIAL TRUE.
-
-    IF  cElement <> ? AND cElement <> "" THEN
-    DO:
-        RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
-
-        IF  RETURN-VALUE = "NOK" THEN
-            RETURN.
-    END.
-
-    /**
-     * For CHOOSE statements, the agent won't expect any response and will be
-     * used a Mouse Click simulation using the "user32.dll".
-     * That's because CHOOSE can open other application that will block the
-     * execution.
-     */
-    IF  CAPS(cEvent) = "CHOOSE" THEN
-    DO:
-        lWait = FALSE.
-
-        IF  hElement:TYPE <> "MENU-ITEM" THEN
-            RUN MouseClick IN hUtils (INPUT hElement).
-        ELSE
-            APPLY "CHOOSE" TO hElement.
-    END.
-    ELSE
-        APPLY cEvent TO hElement.
-
-    cOutput = IF lWait THEN "OK" ELSE ?.
-END PROCEDURE.
-
-/*------------------------------------------------------------------------------
- Purpose: Clear the informed element.
+ Purpose: Clears the widget SCREEN-VALUE.
  Notes:
 ------------------------------------------------------------------------------*/
 PROCEDURE Clear PRIVATE:
@@ -413,7 +336,7 @@ PROCEDURE Clear PRIVATE:
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
- Purpose: Send keys to an element updating its value or firing a shortcut.
+ Purpose: Changes the widget SCREEN-VALUE.
  Notes:
 ------------------------------------------------------------------------------*/
 PROCEDURE SendKeys PRIVATE:
@@ -452,135 +375,7 @@ PROCEDURE SendKeys PRIVATE:
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
- Purpose: Return a value of the element's infomed attribute.
- Notes:
-------------------------------------------------------------------------------*/
-PROCEDURE Get PRIVATE:
-    DEFINE INPUT  PARAMETER cElement   AS CHARACTER NO-UNDO.
-    DEFINE INPUT  PARAMETER cAttribute AS CHARACTER NO-UNDO.
-    DEFINE OUTPUT PARAMETER cOutput    AS CHARACTER NO-UNDO.
-
-    DEFINE VARIABLE hElement AS HANDLE    NO-UNDO.
-    DEFINE VARIABLE hCall    AS HANDLE    NO-UNDO.
-    DEFINE VARIABLE cValue   AS CHARACTER NO-UNDO.
-
-    RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
-
-    IF  RETURN-VALUE = "NOK" THEN
-        RETURN.
-
-    CREATE CALL hCall.
-    hCall:IN-HANDLE = hElement.
-    hCall:CALL-TYPE = GET-ATTR-CALL-TYPE.
-    hCall:CALL-NAME = cAttribute.
-    hCall:INVOKE NO-ERROR.
-
-    cValue = STRING(hCall:RETURN-VALUE).
-
-    IF  ERROR-STATUS:ERROR THEN
-        cOutput = "NOK|" + ERROR-STATUS:GET-MESSAGE(1).
-    ELSE
-        cOutput = "OK|" + cValue.
-
-    hCall:CLEAR.
-    DELETE OBJECT hCall NO-ERROR.
-END PROCEDURE.
-
-/*------------------------------------------------------------------------------
- Purpose: Set a value of the element's informed attribute.
- Notes:
-------------------------------------------------------------------------------*/
-PROCEDURE Set PRIVATE:
-    DEFINE INPUT  PARAMETER cElement   AS CHARACTER NO-UNDO.
-    DEFINE INPUT  PARAMETER cAttribute AS CHARACTER NO-UNDO.
-    DEFINE INPUT  PARAMETER cValue     AS CHARACTER NO-UNDO.
-    DEFINE OUTPUT PARAMETER cOutput    AS CHARACTER NO-UNDO.
-
-    DEFINE VARIABLE hElement AS HANDLE NO-UNDO.
-    DEFINE VARIABLE hCall    AS HANDLE NO-UNDO.
-
-    RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
-
-    IF  RETURN-VALUE = "NOK" THEN
-        RETURN.
-
-    CREATE CALL hCall.
-    hCall:IN-HANDLE = hElement.
-    hCall:CALL-TYPE = SET-ATTR-CALL-TYPE.
-    hCall:CALL-NAME = cAttribute.
-    hCall:NUM-PARAMETERS = 1.
-    hCall:SET-PARAMETER(1,"CHARACTER","INPUT",cValue).
-    hCall:INVOKE NO-ERROR.
-
-    IF  ERROR-STATUS:ERROR THEN
-        cOutput = "NOK|" + ERROR-STATUS:GET-MESSAGE(1).
-    ELSE
-        cOutput = "OK".
-
-    hCall:CLEAR.
-    DELETE OBJECT hCall NO-ERROR.
-END PROCEDURE.
-
-/*------------------------------------------------------------------------------
- Purpose: Select a row in a BROWSE element.
- Notes:
-------------------------------------------------------------------------------*/
-PROCEDURE SelectRow PRIVATE:
-    DEFINE INPUT  PARAMETER cElement AS CHARACTER NO-UNDO.
-    DEFINE INPUT  PARAMETER nRow     AS INTEGER   NO-UNDO.
-    DEFINE OUTPUT PARAMETER cOutput  AS CHARACTER NO-UNDO.
-
-    DEFINE VARIABLE hElement AS HANDLE NO-UNDO.
-
-    RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
-
-    IF  RETURN-VALUE = "NOK" THEN
-        RETURN.
-
-    IF  hElement:TYPE <> "BROWSE" THEN
-    DO:
-        cOutput = "NOK|Element ~"" + hElement:NAME + "~" isn't a BROWSE!".
-        RETURN.
-    END.
-
-    /* Doesn't throw an error if the BROWSE doesn't have any row yet */
-    hElement:SELECT-ROW(nRow) NO-ERROR.
-    cOutput = "OK".
-END PROCEDURE.
-
-/*------------------------------------------------------------------------------
- Purpose: Moves a QUERY object result pointer of the informed BROWSE widget to
-          the specified row.
- Notes:
-------------------------------------------------------------------------------*/
-PROCEDURE RepositionToRow PRIVATE:
-    DEFINE INPUT  PARAMETER cElement AS CHARACTER NO-UNDO.
-    DEFINE INPUT  PARAMETER nRow     AS INTEGER   NO-UNDO.
-    DEFINE OUTPUT PARAMETER cOutput  AS CHARACTER NO-UNDO.
-
-    DEFINE VARIABLE hElement AS HANDLE NO-UNDO.
-
-    RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
-
-    IF  RETURN-VALUE = "NOK" THEN
-        RETURN.
-
-    IF  hElement:TYPE <> "BROWSE" THEN
-    DO:
-        cOutput = "NOK|Element ~"" + hElement:NAME + "~" isn't a BROWSE!".
-        RETURN.
-    END.
-
-    hElement:QUERY:REPOSITION-TO-ROW(nRow) NO-ERROR.
-
-    IF  NOT ERROR-STATUS:ERROR THEN
-        cOutput = "OK".
-    ELSE
-        cOutput = "NOK|" + ERROR-STATUS:GET-MESSAGE(1).
-END PROCEDURE.
-
-/*------------------------------------------------------------------------------
- Purpose: Check/Uncheck a TOGGLE-BOX widget.
+ Purpose: Checks/Unchecks a TOGGLE-BOX widget.
  Notes:
 ------------------------------------------------------------------------------*/
 PROCEDURE Check PRIVATE:
@@ -621,7 +416,7 @@ PROCEDURE Check PRIVATE:
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
- Purpose: Select a value in a COMBO-BOX widget.
+ Purpose: Selects a value in a COMBO-BOX or RADIO-SET widget.
  Notes:
 ------------------------------------------------------------------------------*/
 PROCEDURE Select PRIVATE:
@@ -682,23 +477,206 @@ PROCEDURE Select PRIVATE:
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
- Purpose: Run an OE application.
+ Purpose: Selects a row in a BROWSE widget.
  Notes:
 ------------------------------------------------------------------------------*/
-PROCEDURE Run PRIVATE:
-    DEFINE INPUT  PARAMETER cRun    AS CHARACTER NO-UNDO.
-    DEFINE INPUT  PARAMETER cParams AS CHARACTER NO-UNDO.
-    DEFINE OUTPUT PARAMETER cOutput AS CHARACTER NO-UNDO INITIAL ?.
+PROCEDURE SelectRow PRIVATE:
+    DEFINE INPUT  PARAMETER cElement AS CHARACTER NO-UNDO.
+    DEFINE INPUT  PARAMETER nRow     AS INTEGER   NO-UNDO.
+    DEFINE OUTPUT PARAMETER cOutput  AS CHARACTER NO-UNDO.
 
-    /* Connect Runner SOCKET client */
-    IF  SEARCH(cRun) = ? THEN
-        cOutput = "NOK|OE application ~"" + cRun + "~" not found!".
-    ELSE
-        RUN RunApplication IN hUtils (INPUT cRun, INPUT cParams).
+    DEFINE VARIABLE hElement AS HANDLE NO-UNDO.
+
+    RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
+
+    IF  RETURN-VALUE = "NOK" THEN
+        RETURN.
+
+    IF  hElement:TYPE <> "BROWSE" THEN
+    DO:
+        cOutput = "NOK|Element ~"" + hElement:NAME + "~" isn't a BROWSE!".
+        RETURN.
+    END.
+
+    /* Doesn't throw an error if the BROWSE doesn't have any row yet */
+    hElement:SELECT-ROW(nRow) NO-ERROR.
+    cOutput = "OK".
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
- Purpose:
+ Purpose: Moves a QUERY result pointer of a BROWSE widget to the specified row.
+ Notes:
+------------------------------------------------------------------------------*/
+PROCEDURE RepositionToRow PRIVATE:
+    DEFINE INPUT  PARAMETER cElement AS CHARACTER NO-UNDO.
+    DEFINE INPUT  PARAMETER nRow     AS INTEGER   NO-UNDO.
+    DEFINE OUTPUT PARAMETER cOutput  AS CHARACTER NO-UNDO.
+
+    DEFINE VARIABLE hElement AS HANDLE NO-UNDO.
+
+    RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
+
+    IF  RETURN-VALUE = "NOK" THEN
+        RETURN.
+
+    IF  hElement:TYPE <> "BROWSE" THEN
+    DO:
+        cOutput = "NOK|Element ~"" + hElement:NAME + "~" isn't a BROWSE!".
+        RETURN.
+    END.
+
+    hElement:QUERY:REPOSITION-TO-ROW(nRow) NO-ERROR.
+
+    IF  NOT ERROR-STATUS:ERROR THEN
+        cOutput = "OK".
+    ELSE
+        cOutput = "NOK|" + ERROR-STATUS:GET-MESSAGE(1).
+END PROCEDURE.
+
+/*------------------------------------------------------------------------------
+ Purpose: Applies a CHOOSE event to the widget.
+ Notes:
+------------------------------------------------------------------------------*/
+PROCEDURE Choose PRIVATE:
+    DEFINE INPUT  PARAMETER cElement AS CHARACTER NO-UNDO.
+    DEFINE OUTPUT PARAMETER cOutput  AS CHARACTER NO-UNDO INITIAL ?.
+
+    DEFINE VARIABLE hElement AS HANDLE  NO-UNDO.
+    DEFINE VARIABLE lWait    AS LOGICAL NO-UNDO INITIAL TRUE.
+
+    IF  cElement <> ? AND cElement <> "" THEN
+    DO:
+        RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
+
+        IF  RETURN-VALUE = "NOK" THEN
+            RETURN.
+    END.
+
+    IF  NOT hElement:SENSITIVE THEN
+    DO:
+        cOutput = "NOK|Element ~"" + hElement:NAME + "~" is disabled!".
+        RETURN.
+    END.
+    
+    /* Force focus to the WIDGET */
+    APPLY "ENTRY" TO hElement.
+
+    RUN Apply(INPUT cElement, INPUT "CHOOSE", OUTPUT cOutput).
+END PROCEDURE.
+
+/*------------------------------------------------------------------------------
+ Purpose: Applies an event to the widget.
+ Notes:
+------------------------------------------------------------------------------*/
+PROCEDURE Apply PRIVATE:
+    DEFINE INPUT  PARAMETER cElement AS CHARACTER NO-UNDO.
+    DEFINE INPUT  PARAMETER cEvent   AS CHARACTER NO-UNDO.
+    DEFINE OUTPUT PARAMETER cOutput  AS CHARACTER NO-UNDO INITIAL "OK".
+
+    DEFINE VARIABLE hElement AS HANDLE  NO-UNDO.
+    DEFINE VARIABLE lWait    AS LOGICAL NO-UNDO INITIAL TRUE.
+
+    IF  cElement <> ? AND cElement <> "" THEN
+    DO:
+        RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
+
+        IF  RETURN-VALUE = "NOK" THEN
+            RETURN.
+    END.
+
+    /**
+     * For CHOOSE statements, the agent won't expect any response and will be
+     * used a Mouse Click simulation using the "user32.dll".
+     * That's because CHOOSE can open other application that will block the
+     * execution.
+     */
+    IF  CAPS(cEvent) = "CHOOSE" THEN
+    DO:
+        lWait = FALSE.
+
+        IF  hElement:TYPE <> "MENU-ITEM" THEN
+            RUN MouseClick IN hUtils (INPUT hElement).
+        ELSE
+            APPLY "CHOOSE" TO hElement.
+    END.
+    ELSE
+        APPLY cEvent TO hElement.
+
+    cOutput = IF lWait THEN "OK" ELSE ?.
+END PROCEDURE.
+
+/*------------------------------------------------------------------------------
+ Purpose: Gets the widget's informed attribute value.
+ Notes:
+------------------------------------------------------------------------------*/
+PROCEDURE Get PRIVATE:
+    DEFINE INPUT  PARAMETER cElement   AS CHARACTER NO-UNDO.
+    DEFINE INPUT  PARAMETER cAttribute AS CHARACTER NO-UNDO.
+    DEFINE OUTPUT PARAMETER cOutput    AS CHARACTER NO-UNDO.
+
+    DEFINE VARIABLE hElement AS HANDLE    NO-UNDO.
+    DEFINE VARIABLE hCall    AS HANDLE    NO-UNDO.
+    DEFINE VARIABLE cValue   AS CHARACTER NO-UNDO.
+
+    RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
+
+    IF  RETURN-VALUE = "NOK" THEN
+        RETURN.
+
+    CREATE CALL hCall.
+    hCall:IN-HANDLE = hElement.
+    hCall:CALL-TYPE = GET-ATTR-CALL-TYPE.
+    hCall:CALL-NAME = cAttribute.
+    hCall:INVOKE NO-ERROR.
+
+    cValue = STRING(hCall:RETURN-VALUE).
+
+    IF  ERROR-STATUS:ERROR THEN
+        cOutput = "NOK|" + ERROR-STATUS:GET-MESSAGE(1).
+    ELSE
+        cOutput = "OK|" + cValue.
+
+    hCall:CLEAR.
+    DELETE OBJECT hCall NO-ERROR.
+END PROCEDURE.
+
+/*------------------------------------------------------------------------------
+ Purpose: Sets the widget's informed attribute value.
+ Notes:
+------------------------------------------------------------------------------*/
+PROCEDURE Set PRIVATE:
+    DEFINE INPUT  PARAMETER cElement   AS CHARACTER NO-UNDO.
+    DEFINE INPUT  PARAMETER cAttribute AS CHARACTER NO-UNDO.
+    DEFINE INPUT  PARAMETER cValue     AS CHARACTER NO-UNDO.
+    DEFINE OUTPUT PARAMETER cOutput    AS CHARACTER NO-UNDO.
+
+    DEFINE VARIABLE hElement AS HANDLE NO-UNDO.
+    DEFINE VARIABLE hCall    AS HANDLE NO-UNDO.
+
+    RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
+
+    IF  RETURN-VALUE = "NOK" THEN
+        RETURN.
+
+    CREATE CALL hCall.
+    hCall:IN-HANDLE = hElement.
+    hCall:CALL-TYPE = SET-ATTR-CALL-TYPE.
+    hCall:CALL-NAME = cAttribute.
+    hCall:NUM-PARAMETERS = 1.
+    hCall:SET-PARAMETER(1,"CHARACTER","INPUT",cValue).
+    hCall:INVOKE NO-ERROR.
+
+    IF  ERROR-STATUS:ERROR THEN
+        cOutput = "NOK|" + ERROR-STATUS:GET-MESSAGE(1).
+    ELSE
+        cOutput = "OK".
+
+    hCall:CLEAR.
+    DELETE OBJECT hCall NO-ERROR.
+END PROCEDURE.
+
+/*------------------------------------------------------------------------------
+ Purpose: Selects one or more records of the informed table.
  Notes:
 ------------------------------------------------------------------------------*/
 PROCEDURE Query PRIVATE:
@@ -755,7 +733,7 @@ PROCEDURE Query PRIVATE:
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
- Purpose: Create one or more records on a table.
+ Purpose: Creates one or more records in the informed table.
  Notes:
 ------------------------------------------------------------------------------*/
 PROCEDURE Create PRIVATE:
@@ -826,7 +804,7 @@ PROCEDURE Create PRIVATE:
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
- Purpose: Update one or more records of a table.
+ Purpose: Updates one or more records of the informed table.
  Notes:
 ------------------------------------------------------------------------------*/
 PROCEDURE Update PRIVATE:
@@ -915,7 +893,7 @@ PROCEDURE Update PRIVATE:
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
- Purpose: Delete one or more records of a table.
+ Purpose: Deletes one or more records of the informed table.
  Notes:
 ------------------------------------------------------------------------------*/
 PROCEDURE Delete PRIVATE:
@@ -994,7 +972,23 @@ PROCEDURE Delete PRIVATE:
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------
- Purpose: Return the handle of a element.
+ Purpose: Runs a PROCEDURE command or open an OE application.
+ Notes:
+------------------------------------------------------------------------------*/
+PROCEDURE Run PRIVATE:
+    DEFINE INPUT  PARAMETER cRun    AS CHARACTER NO-UNDO.
+    DEFINE INPUT  PARAMETER cParams AS CHARACTER NO-UNDO.
+    DEFINE OUTPUT PARAMETER cOutput AS CHARACTER NO-UNDO INITIAL ?.
+
+    /* Connect Runner SOCKET client */
+    IF  SEARCH(cRun) = ? THEN
+        cOutput = "NOK|OE application ~"" + cRun + "~" not found!".
+    ELSE
+        RUN RunApplication IN hUtils (INPUT cRun, INPUT cParams).
+END PROCEDURE.
+
+/*------------------------------------------------------------------------------
+ Purpose: Return the handle of the informed element.
  Notes:
 ------------------------------------------------------------------------------*/
 PROCEDURE GetElementHandle PRIVATE:

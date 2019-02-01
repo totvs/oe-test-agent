@@ -1,12 +1,12 @@
 /*------------------------------------------------------------------------
-    File        : socket.i
+    File        : Socket.i
     Purpose     : 
 
     Syntax      :
 
     Description : 
 
-    Author(s)   : 
+    Author(s)   : Rubens Dos Santos Filho
     Created     : Thu Nov 01 16:05:26 BRST 2018
     Notes       :
   ----------------------------------------------------------------------*/
@@ -15,20 +15,13 @@
 DEFINE VARIABLE hSrvSkt AS HANDLE NO-UNDO.
 DEFINE VARIABLE mData   AS MEMPTR NO-UNDO.
 
-
-/* ********************  Preprocessor Definitions  ******************** */
-
-
-/* ***************************  Main Block  *************************** */
-
-
 /* **********************  Internal Procedures  *********************** */
 
+/*------------------------------------------------------------------------------
+ Purpose:
+ Notes:
+------------------------------------------------------------------------------*/
 PROCEDURE EnableSocket:
-    /*------------------------------------------------------------------------------
-     Purpose:
-     Notes:
-    ------------------------------------------------------------------------------*/
     DEFINE VARIABLE lStatus AS LOGICAL NO-UNDO.
     
     CREATE SERVER-SOCKET hSrvSkt.
@@ -40,22 +33,22 @@ PROCEDURE EnableSocket:
     IF  NOT lStatus THEN QUIT.
 END PROCEDURE.
 
+/*------------------------------------------------------------------------------
+ Purpose:
+ Notes:
+------------------------------------------------------------------------------*/
 PROCEDURE CloseSocket:
-    /*------------------------------------------------------------------------------
-     Purpose:
-     Notes:
-    ------------------------------------------------------------------------------*/
     SET-SIZE(mData) = 0.
     
     hSrvSkt:DISABLE-CONNECTIONS().
     DELETE OBJECT hSrvSkt NO-ERROR.
 END PROCEDURE.
 
+/*------------------------------------------------------------------------------
+ Purpose:
+ Notes:
+------------------------------------------------------------------------------*/
 PROCEDURE SocketConnect:
-    /*------------------------------------------------------------------------------
-     Purpose:
-     Notes:
-    ------------------------------------------------------------------------------*/
     DEFINE INPUT PARAMETER hSocket AS HANDLE NO-UNDO.
     DEFINE VARIABLE lStatus AS LOGICAL NO-UNDO.
     

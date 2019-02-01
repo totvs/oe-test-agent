@@ -29,7 +29,7 @@ export class OEAgent {
    * @returns A promise result of the agent initialization and connection.
    */
   public start(config: OEConfig): Promise<boolean | Error> {
-    return browser.call(() => {
+    return browser.call(() => new Promise((resolve, reject) => {
       const cmd = this.buildCommandLine(config);
       const cwd = `${__dirname.replace(/\\/g, '/')}/abl/`;
 
@@ -40,13 +40,13 @@ export class OEAgent {
 
       // Will use "race" to guess if Progress OE has been successfully opened.
       // This is not a 100% guarantee thing.
-      const suc = new Promise((resolve) => setTimeout(() => resolve({ status: true }), 5 * 1000));
-      const err = new Promise((resolve) => run.on('error', (error: Error) => resolve({ status: false, error: error })));
+      const suc = new Promise((res) => setTimeout(() => res({ status: true }), 10_000));
+      const err = new Promise((res) => run.on('error', (error: Error) => res({ status: false, error: error })));
 
       return Promise.race([suc, err]).then((result) => {
-        return result['status'] ? this.connect(config.host, config.port) : Promise.reject(result['error']);
+        return result['status'] ? this.connect(config.host, config.port).then(resolve) : reject(result['error']);
       });
-    }) as Promise<boolean | Error>;
+    })) as Promise<boolean | Error>;
   }
 
   /**
@@ -183,6 +183,16 @@ export class OEAgent {
   }
 
   /**
+   * Returns if the widget ```OEElement``` is valid.
+
+   * @param element Widget ```OEElement``` instance.
+   * @returns A promise result of the command.
+   */
+  public isElementValid(element: OEElement): Promise<boolean> {
+    return browser.call(() => element.id > 0).then(() => true).catch(() => false) as Promise<boolean>;
+  }
+
+  /**
    * Clears the widget ```SCREEN-VALUE```.
    *
    * @param element Widget ```OEElement``` instance.
@@ -254,7 +264,7 @@ export class OEAgent {
   }
 
   /**
-   * Fire the widget ```CHOOSE``` event.
+   * Applies a ```CHOOSE``` event to the widget.
    *
    * @param element Widget ```OEElement``` instance.
    * @returns A promise result of the command.
@@ -264,7 +274,7 @@ export class OEAgent {
   }
 
   /**
-   * Sends an ```APPLY``` command with an event to the widget.
+   * Applies an event to the widget.
    *
    * @param event Event name.
    * @param element Widget ```OEElement``` instance.
@@ -414,7 +424,7 @@ export class OEAgent {
   }
 
   /**
-   * Sends a ```RUN``` command to open an OE application.
+   * Runs a ```PROCEDURE``` command or open an OE application.
    *
    * @param run OE application path (full or partial according to PROPATH).
    * @param params Application input parameters.
@@ -426,7 +436,7 @@ export class OEAgent {
   }
 
   /**
-   * Sends a ```QUIT``` command to the agent.
+   * Quits the agent application.
    * This will close all comunication with the agent server.
    *
    * @returns A promise result of the command.
@@ -585,3 +595,8 @@ export class OEAgent {
     return cmd;
   }
 }
+
+/**
+ * ```OEAgent``` singleton instance.
+ */
+export const oeAgent = new OEAgent();

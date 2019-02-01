@@ -1,10 +1,17 @@
 {
   "name": "oe-test-agent",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Progress utility for e2e tests with Protractor",
-  "author": "TOTVS",
+  "author": "TOTVS S/A",
   "license": "ISC",
-  "homepage": "https://github.com/totvs/oe-test-agent",
+  "homepage": "https://github.com/totvs/oe-test-agent#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/totvs/oe-test-agent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/totvs/oe-test-agent/issues"
+  },
   "keywords": [
     "openedge",
     "abl",

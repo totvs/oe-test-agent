@@ -7,8 +7,9 @@ import { MessageType, OEUtils } from './OEUtils';
  * Provides a socket communication with the agent server.
  */
 export class OESocket {
+  private retries = 5;
   private isConnected = false;
-  private socket!: net.Socket;
+  private socket = new net.Socket();
 
   constructor() {}
 
@@ -24,14 +25,14 @@ export class OESocket {
     return new Promise((resolve, reject) => {
       OEUtils.consoleLogMessage(`Connecting on agent server at "${host}:${port}"`, MessageType.INFO);
 
-      const connect = () => this.socket = net.createConnection(port, host);
-      const retries = 5;
-
-      connect();
+      this.retries = 5;
+      const connect = () => this.socket.connect(port, host);
 
       this.socket.on('connect', () => this.onConnect(resolve));
       this.socket.on('close', () => this.onClose());
-      this.socket.on('error', (error: Error) => this.onError(connect, retries, error, reject));
+      this.socket.on('error', (error: Error) => this.onError(connect, error, reject));
+
+      connect();
     });
   }
 
@@ -64,27 +65,28 @@ export class OESocket {
    * Event fired when the client closes its communication with the agent server.
    */
   private onClose(): void {
-    this.socket.removeAllListeners();
-    this.socket.destroy();
-    this.socket = undefined as unknown as net.Socket;
-    this.isConnected = false;
-    OEUtils.consoleLogMessage(`Agent server connection closed`, MessageType.WARNING);
+    if (this.isConnected) {
+      this.socket.removeAllListeners();
+      this.socket.destroy();
+      this.socket = undefined as unknown as net.Socket;
+      this.isConnected = false;
+      OEUtils.consoleLogMessage(`Agent server connection closed`, MessageType.WARNING);
+    }
   }
 
   /**
    * Event fired when a error occurs at with the agent server communication.
    *
    * @param connect Connection function (to retry).
-   * @param retries Maximum of connection retries.
    * @param error Error object that was raised.
    * @param reject The reject function of the connection Promise.
    */
-  private onError(connect: Function, retries: number, error: NodeJS.ErrnoException, reject: (error: Error) => void): void {
-    if (error.code === 'ECONNRESET') {
+  private onError(connect: Function, error: NodeJS.ErrnoException, reject: (error: Error) => void): void {
+    if (this.connected && error.code === 'ECONNRESET') {
       this.socket.end();
-    } else if (retries > 0) {
-      retries--;
-      setTimeout(connect, 1000);
+    } else if (this.retries > 0) {
+      this.retries--;
+      setTimeout(connect, 2_000);
     } else {
       OEUtils.consoleLogMessage(`Agent server connection error: ${error.message}`, MessageType.ERROR);
       reject(error);
