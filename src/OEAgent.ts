@@ -85,10 +85,10 @@ export class OEAgent {
         element.id = parseInt(id);
         return true;
       } catch {
-        await browser.sleep(2000);
+        await browser.sleep(700);
         return false;
       }
-    }, timeout);
+    }, timeout).catch(() => {} /* To avoid throwing an error */);
 
     return element;
   }
@@ -131,10 +131,10 @@ export class OEAgent {
         element.id = parseInt(id);
         return true;
       } catch {
-        await browser.sleep(2000);
+        await browser.sleep(700);
         return false;
       }
-    }, timeout);
+    }, timeout).catch(() => {} /* To avoid throwing an error */);
 
     return element;
   }
@@ -189,7 +189,7 @@ export class OEAgent {
    * @returns A promise result of the command.
    */
   public isElementValid(element: OEElement): Promise<boolean> {
-    return browser.call(() => element.id > 0).then(() => true).catch(() => false) as Promise<boolean>;
+    return browser.call(() => element.id && element.id > 0) as Promise<boolean>;
   }
 
   /**

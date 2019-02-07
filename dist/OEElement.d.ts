@@ -124,4 +124,3 @@ export declare class OEElement {
      */
     set(attribute: OEAttributes, value: string): OEElement;
 }
-//# sourceMappingURL=OEElement.d.ts.map

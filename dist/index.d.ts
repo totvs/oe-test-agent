@@ -7,4 +7,3 @@ export * from './OEElement';
 export * from './OEEvents.enum';
 export * from './OESocket';
 export * from './OEUtils';
-//# sourceMappingURL=index.d.ts.map

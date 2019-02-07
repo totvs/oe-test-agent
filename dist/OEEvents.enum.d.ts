@@ -11,4 +11,3 @@ export declare enum OEEvents {
     RIGHTMOUSEUP = "RIGHT-MOUSE-UP",
     WINDOWCLOSE = "WINDOW-CLOSE"
 }
-//# sourceMappingURL=OEEvents.enum.d.ts.map
