@@ -12,4 +12,3 @@ export declare enum OEAttributes {
     TOOLTIP = "TOOLTIP",
     WINDOW = "WINDOW"
 }
-//# sourceMappingURL=OEAttributes.enum.d.ts.map

@@ -18,4 +18,3 @@ export declare class OEUtils {
      */
     static consoleLogMessage(message: string, type: MessageType): void;
 }
-//# sourceMappingURL=OEUtils.d.ts.map

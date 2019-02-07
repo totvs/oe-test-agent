@@ -57,4 +57,3 @@ export declare class OESocket {
      */
     send(wait: boolean, ...args: any[]): promise.Promise<string>;
 }
-//# sourceMappingURL=OESocket.d.ts.map

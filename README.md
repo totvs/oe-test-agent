@@ -48,6 +48,10 @@ npm i oe-test-agent
   - Created a method to return if an ```OEElement``` is valid or not.
   - Created an ```OEAgent``` singleton instance to use at e2e that uses Page Objects.
 
+## **1.0.6**:
+  - Solved a bug where OEElement ```isElementValid``` method was always returning true
+  - Improvements made at ```waitForWindow``` and ```waitForElement``` methods
+
 # Want to help?
 
 You're welcome to open an issue to report bugs, suggest improvements on this GitHub or to submit a PR.

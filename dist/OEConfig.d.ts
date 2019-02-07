@@ -43,4 +43,3 @@ export declare class OEConfig {
      */
     inputCodepage?: string | undefined;
 }
-//# sourceMappingURL=OEConfig.d.ts.map
