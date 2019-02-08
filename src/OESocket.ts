@@ -9,7 +9,7 @@ import { MessageType, OEUtils } from './OEUtils';
 export class OESocket {
   private retries = 5;
   private isConnected = false;
-  private socket = new net.Socket();
+  private socket!: net.Socket;
 
   constructor() {}
 
@@ -26,6 +26,8 @@ export class OESocket {
       OEUtils.consoleLogMessage(`Connecting on agent server at "${host}:${port}"`, MessageType.INFO);
 
       this.retries = 5;
+      this.socket = new net.Socket();
+
       const connect = () => this.socket.connect(port, host);
 
       this.socket.on('connect', () => this.onConnect(resolve));

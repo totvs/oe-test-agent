@@ -1,6 +1,6 @@
 {
   "name": "oe-test-agent",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Progress utility for e2e tests with Protractor",
   "author": "TOTVS S/A",
   "license": "ISC",
@@ -35,10 +35,8 @@
     "del": "^3.0.0",
     "gulp": "^4.0.0",
     "gulp-protractor": "^4.1.0",
-    "gulp-rename": "^1.4.0",
     "gulp-typescript": "^5.0.0-alpha.3",
     "gulp-uglify-es": "^1.0.4",
-    "gulp4": "^4.0.2",
     "typescript": "^3.1.5"
   },
   "dependencies": {

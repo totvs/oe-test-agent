@@ -52,6 +52,10 @@ npm i oe-test-agent
   - Solved a bug where OEElement ```isElementValid``` method was always returning true
   - Improvements made at ```waitForWindow``` and ```waitForElement``` methods
 
+## **1.0.7**:
+  - Solved a bug on the socket communication
+  - Removed unused dependencies
+
 # Want to help?
 
 You're welcome to open an issue to report bugs, suggest improvements on this GitHub or to submit a PR.
