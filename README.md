@@ -13,6 +13,7 @@
 The **OE Test Agent** was developed in order to make our e2e test for OpenEdge applications easier.
 
 Our dev team was already familiar with [**Protractor**](https://www.protractortest.org), so we took advantage of that to create this project using only *socket* communication between JavaScript and OE and an external tool - also created by us - called ["Robot"](#robotexe).
+
 In other words, the **OE Test Agent** acts as a web driver of Protractor, allowing it to interact with OpenEdge applications as a user would. We also built a set of TypesScript libraries for helping developers to manipulate widgets, properties and events of OpenEdge applications, so that you can easily write tests in a traditional behavior-driven development style. 
 
 # Installation
