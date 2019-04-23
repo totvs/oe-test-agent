@@ -14,7 +14,7 @@ The **OE Test Agent** was developed in order to make our e2e test for OpenEdge a
 
 Our dev team was already familiar with [**Protractor**](https://www.protractortest.org), so we took advantage of that to create this project using only *socket* communication between JavaScript and OE and an external tool - also created by us - called ["Robot"](#robotexe).
 
-In other words, the **OE Test Agent** acts as a web driver of Protractor, allowing it to interact with OpenEdge applications as a user would. We also built a set of [TypeScript](https://www.typescriptlang.org) libraries for helping developers to manipulate widgets, properties and events of OpenEdge applications, so that you can easily write tests in a traditional behavior-driven development style. 
+In other words, the **OE Test Agent** acts as a web driver of Protractor, allowing it to interact with OpenEdge applications as a user would. We also built a set of [TypeScript](https://www.typescriptlang.org) libraries for helping developers to manipulate widgets, properties and events of OpenEdge applications, so that you can easily write tests in a traditional behavior-driven development style.
 
 # Installation
 
@@ -55,8 +55,14 @@ npm i oe-test-agent
   - Improvements made at ```waitForWindow``` and ```waitForElement``` methods
 
 ## **1.0.7**:
+## **1.0.8**:
+## **1.0.9**:
+## **1.0.10**:
   - Solved a bug on the socket communication
   - Removed unused dependencies
+
+## **1.0.11**:
+  - Solved a bug when enabling coverage
 
 # Want to help?
 

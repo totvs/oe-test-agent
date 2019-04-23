@@ -8,7 +8,7 @@
 
     Author(s)   : Rubens Dos Santos Filho
     Created     : Fri Nov 02 11:03:33 BRST 2018
-    Notes       : 
+    Notes       :
   ----------------------------------------------------------------------*/
 
 USING com.oetestagent.OEConfig FROM PROPATH.
@@ -16,7 +16,7 @@ USING com.oetestagent.OEConfig FROM PROPATH.
 /* ***************************  Definitions  ************************** */
 DEFINE INPUT PARAMETER cConfig AS CHARACTER NO-UNDO.
 
-DEFINE VARIABLE oConfig AS OEConfig NO-UNDO. 
+DEFINE VARIABLE oConfig AS OEConfig NO-UNDO.
 DEFINE VARIABLE hUtils  AS HANDLE   NO-UNDO.
 
 /* ***************************  Main Block  *************************** */
@@ -41,17 +41,11 @@ RUN OEAgent.p (INPUT oConfig:GetHost(), INPUT oConfig:GetPort(), INPUT oConfig:G
 ------------------------------------------------------------------------------*/
 PROCEDURE EnableCoverage PRIVATE:
     DEFINE INPUT PARAMETER cOutDir AS CHARACTER NO-UNDO.
-    
+
     DEFINE VARIABLE cFile  AS CHARACTER NO-UNDO.
     DEFINE VARIABLE dToday AS DATE      NO-UNDO.
-    
-    PROFILER:ENABLED   = YES.
-    PROFILER:COVERAGE  = YES.
-    PROFILER:PROFILING = YES.
-    
-    IF  NOT PROFILER:ENABLED
-    OR  PROFILER:FILE-NAME = ?
-    OR  PROFILER:FILE-NAME = "" THEN
+
+    IF  NOT PROFILER:ENABLED THEN
     DO:
         ASSIGN
             dToday = TODAY
@@ -60,7 +54,10 @@ PROCEDURE EnableCoverage PRIVATE:
             cFile  = cFile + STRING(MONTH(dToday),"99") + "-"
             cFile  = cFile + STRING(DAY(dToday),"99") + "-"
             cFile  = cFile + REPLACE(STRING(TIME, "HH:MM:SS"),":","-") + ".out".
+        PROFILER:ENABLED   = YES.
         PROFILER:FILE-NAME = cFile.
+        PROFILER:COVERAGE  = YES.
+        PROFILER:PROFILING = YES.
     END.
 END PROCEDURE.
 
@@ -70,7 +67,7 @@ END PROCEDURE.
 ------------------------------------------------------------------------------*/
 PROCEDURE SetPropath PRIVATE:
     DEFINE INPUT PARAMETER cPropath AS CHARACTER NO-UNDO.
-    
+
     IF  cPropath <> ? AND cPropath <> "" THEN
     DO:
         PROPATH = PROPATH + "," + cPropath.
