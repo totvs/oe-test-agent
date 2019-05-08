@@ -423,6 +423,26 @@ export class OEAgent {
     return browser.call(() => this.oeSocket.send(true, 'DELETE', table, JSON.stringify(data), JSON.stringify(index)).then(() => true)) as Promise<boolean | Error>;
   }
 
+    /**
+     * Deletes all the records of the informed table.
+     *
+     * @param table Table name.
+     * @param where Optional delete's WHERE clause.
+     *              Without this param, all the records of the informed table will be deleted.
+     *
+     * @returns A promise result of the command.
+     *
+     * @example
+     * ```typescript
+     *
+     * oe.deleteAll('Department', 'DeptCode = "123"');
+     * oe.deleteAll("Department");
+     * ```
+     */
+  public deleteAll(table: string, where?: string): Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'DELETEALL', table, where || "").then(() => true)) as Promise<boolean | Error>;
+  }
+
   /**
    * Runs a ```PROCEDURE``` command or open an OE application.
    *

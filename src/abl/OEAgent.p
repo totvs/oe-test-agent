@@ -194,6 +194,9 @@ PROCEDURE AgentIO PRIVATE:
         WHEN "DELETE" THEN
             RUN Delete(INPUT aParams[1], INPUT aParams[2], INPUT aParams[3], OUTPUT cOutput).
 
+        WHEN "DELETEALL" THEN                                       
+            RUN DeleteAll(INPUT aParams[1], INPUT aParams[2], OUTPUT cOutput).
+
         WHEN "RUN" THEN
             RUN Run(INPUT aParams[1], INPUT aParams[2], OUTPUT cOutput).
 
@@ -929,7 +932,7 @@ PROCEDURE Delete PRIVATE:
 
     DELETERECORDS:
     DO  TRANSACTION:
-        DO  nData = 1 TO oTable:Length:
+        DO  nData = 1 TO oTable:Length:                                                                                                                      
             /* Generate a WHERE clause for the DELETE command */
             RUN GetStatementWhereClause(INPUT hBuffer, INPUT oTable:GetJsonObject(nData), INPUT oIndex, OUTPUT cWhere).
 
@@ -968,6 +971,79 @@ PROCEDURE Delete PRIVATE:
         DELETE OBJECT oTable  NO-ERROR.
         DELETE OBJECT oIndex  NO-ERROR.
         DELETE OBJECT oData   NO-ERROR.
+    END FINALLY.
+END PROCEDURE.
+
+/*------------------------------------------------------------------------------
+ Purpose: Deletes all the records of the informed table.
+ Notes:
+------------------------------------------------------------------------------*/
+PROCEDURE DeleteAll PRIVATE:
+    DEFINE INPUT  PARAMETER cTable  AS CHARACTER NO-UNDO.
+    DEFINE INPUT  PARAMETER cWhere  AS CHARACTER NO-UNDO.
+    DEFINE OUTPUT PARAMETER cOutput AS CHARACTER NO-UNDO.
+
+    DEFINE VARIABLE hBuffer AS HANDLE   NO-UNDO.
+    DEFINE VARIABLE hQuery  AS HANDLE   NO-UNDO.
+    DEFINE VARIABLE lStatus AS LOGICAL    NO-UNDO.
+    DEFINE VARIABLE cError  AS CHARACTER  NO-UNDO.
+        
+    CREATE BUFFER hBuffer FOR TABLE cTable.
+    
+    CREATE QUERY hQuery.
+    hQuery:SET-BUFFERS(hBuffer).
+
+    IF cWhere = "" THEN DO:
+        hQuery:QUERY-PREPARE("FOR EACH " + cTable + " NO-LOCK").
+    END.    
+    ELSE DO:
+        hQuery:QUERY-PREPARE("FOR EACH " + cTable + " WHERE " + cWhere + " NO-LOCK").
+    END.
+    
+    hQuery:QUERY-OPEN().
+    
+    /* Clears ERROR-STATUS */
+    RUN ClearErrorStatus.
+
+    DELETEALLRECORDS:
+    DO  TRANSACTION:                                                                                                                    
+
+        hQuery:GET-FIRST(EXCLUSIVE-LOCK, NO-WAIT).
+
+        REPEAT WHILE NOT hQuery:QUERY-OFF-END:                          
+
+            IF  hBuffer:AVAILABLE THEN
+            DO:
+                RUN DoLog IN hUtils (INPUT "DELETEALL", INPUT "Deleting all the records at ~"" + cTable + "~" using WHERE clause ~"" + cWhere + "~"").
+                lStatus = hBuffer:BUFFER-DELETE() NO-ERROR.
+
+                IF  NOT lStatus THEN
+                DO:
+                    cError = ERROR-STATUS:GET-MESSAGE(1).
+                    UNDO DELETEALLRECORDS, LEAVE DELETEALLRECORDS.
+                END.
+
+                hQuery:GET-NEXT(EXCLUSIVE-LOCK, NO-WAIT).
+            END.
+        END.
+
+        lStatus = hBuffer:BUFFER-RELEASE() NO-ERROR.
+
+        IF  NOT lStatus THEN
+        DO:
+            cError = ERROR-STATUS:GET-MESSAGE(1).
+            UNDO DELETEALLRECORDS, LEAVE DELETEALLRECORDS.
+        END.
+    END.
+
+    IF  lStatus THEN
+        cOutput = "OK".
+    ELSE
+        cOutput = "NOK|" + cError.
+
+    FINALLY:
+        DELETE OBJECT hQuery NO-ERROR.
+        DELETE OBJECT hBuffer NO-ERROR.
     END FINALLY.
 END PROCEDURE.
 
