@@ -21,7 +21,7 @@ export class OESocket {
    *
    * @returns A promise result of the command.
    */
-  public connect(host: string, port: number): promise.Promise<boolean | Error> {
+  public connect(host: string, port: number): promise.Promise<boolean> {
     return new Promise((resolve, reject) => {
       OEUtils.consoleLogMessage(`Connecting on agent server at "${host}:${port}"`, MessageType.INFO);
 

@@ -1,5 +1,6 @@
 .vscode/
 node_modules/
+dist/
 **/*.log
 **/src/**/*.js
 **/src/**/*.r

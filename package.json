@@ -1,6 +1,6 @@
 {
   "name": "oe-test-agent",
-  "version": "1.0.11",
+  "version": "1.1.0",
   "description": "Progress utility for e2e tests with Protractor",
   "author": "TOTVS S/A",
   "license": "ISC",
@@ -20,11 +20,11 @@
   ],
   "main": "./dist/src/index.js",
   "scripts": {
-    "gulp": "./node_modules/.bin/gulp4",
+    "gulp": "./node_modules/.bin/gulp",
     "test": "npm run gulp -- test",
     "webdriver-update": "./node_modules/.bin/webdriver-manager update",
     "postinstall": "npm run webdriver-update",
-    "build": "npm run gulp -- build"
+    "build": "ant build && npm run gulp -- build"
   },
   "devDependencies": {
     "@types/colors": "^1.2.1",
@@ -33,7 +33,7 @@
     "@types/node": "^10.12.1",
     "@types/protractor": "^4.0.0",
     "del": "^3.0.0",
-    "gulp": "^4.0.0",
+    "gulp": "^4.0.2",
     "gulp-protractor": "^4.1.0",
     "gulp-typescript": "^5.0.0-alpha.3",
     "gulp-uglify-es": "^1.0.4",

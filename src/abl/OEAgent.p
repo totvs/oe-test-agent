@@ -191,7 +191,7 @@ PROCEDURE AgentIO PRIVATE:
         WHEN "UPDATE" THEN
             RUN Update(INPUT aParams[1], INPUT aParams[2], INPUT aParams[3], OUTPUT cOutput).
 
-        WHEN "DELETE" THEN                                       
+        WHEN "DELETE" THEN
             RUN Delete(INPUT aParams[1], INPUT aParams[2], OUTPUT cOutput).
 
         WHEN "RUN" THEN
@@ -404,7 +404,7 @@ PROCEDURE Check PRIVATE:
 
     /* Force focus to the WIDGET so ENTRY and LEAVE events are fired */
     APPLY "ENTRY" TO hElement.
-    
+
     hElement:CHECKED = lChecked NO-ERROR.
 
     IF  ERROR-STATUS:ERROR THEN
@@ -445,7 +445,7 @@ PROCEDURE Select PRIVATE:
         cOutput = "NOK|Element ~"" + hElement:NAME + "~" is disabled!".
         RETURN.
     END.
-    
+
     /* Force focus to the WIDGET so ENTRY and LEAVE events are fired */
     APPLY "ENTRY" TO hElement.
 
@@ -557,7 +557,7 @@ PROCEDURE Choose PRIVATE:
         cOutput = "NOK|Element ~"" + hElement:NAME + "~" is disabled!".
         RETURN.
     END.
-    
+
     /* Force focus to the WIDGET */
     APPLY "ENTRY" TO hElement.
 
@@ -901,29 +901,27 @@ PROCEDURE Delete PRIVATE:
     DEFINE INPUT  PARAMETER cWhere  AS CHARACTER NO-UNDO.
     DEFINE OUTPUT PARAMETER cOutput AS CHARACTER NO-UNDO.
 
-    DEFINE VARIABLE hBuffer AS HANDLE   NO-UNDO.
-    DEFINE VARIABLE hQuery  AS HANDLE   NO-UNDO.
-    DEFINE VARIABLE lStatus AS LOGICAL    NO-UNDO.
-    DEFINE VARIABLE cError  AS CHARACTER  NO-UNDO.
-        
+    DEFINE VARIABLE hBuffer AS HANDLE    NO-UNDO.
+    DEFINE VARIABLE hQuery  AS HANDLE    NO-UNDO.
+    DEFINE VARIABLE lStatus AS LOGICAL   NO-UNDO.
+    DEFINE VARIABLE cError  AS CHARACTER NO-UNDO.
+
     CREATE BUFFER hBuffer FOR TABLE cTable.
-    
+
     CREATE QUERY hQuery.
     hQuery:SET-BUFFERS(hBuffer).
 
     hQuery:QUERY-PREPARE("FOR EACH " + cTable + " WHERE " + cWhere + " NO-LOCK").
-
     hQuery:QUERY-OPEN().
-    
+
     /* Clears ERROR-STATUS */
     RUN ClearErrorStatus.
 
     DELETERECORDS:
-    DO  TRANSACTION:                                                                                                                    
-
+    DO  TRANSACTION:
         hQuery:GET-FIRST(EXCLUSIVE-LOCK, NO-WAIT).
 
-        REPEAT WHILE NOT hQuery:QUERY-OFF-END:                          
+        REPEAT WHILE NOT hQuery:QUERY-OFF-END:
 
             IF  hBuffer:AVAILABLE THEN
             DO:

@@ -1,1 +1,0 @@
-"use strict";var OEAttributes;Object.defineProperty(exports,"__esModule",{value:!0}),function(E){E.BGCOLOR="BGCOLOR",E.CHECKED="CHECKED",E.FRAME="FRAME",E.IMAGEUP="IMAGE-UP",E.SCREENVALUE="SCREEN-VALUE",E.SENSITIVE="SENSITIVE",E.TITLE="TITLE",E.TOOLTIP="TOOLTIP",E.WINDOW="WINDOW"}(OEAttributes=exports.OEAttributes||(exports.OEAttributes={}));

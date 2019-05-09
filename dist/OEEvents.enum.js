@@ -1,1 +1,0 @@
-"use strict";var OEEvents;Object.defineProperty(exports,"__esModule",{value:!0}),function(E){E.CHOOSE="CHOOSE",E.CLOSE="CLOSE",E.ENDKEY="ENDKEY",E.ENTRY="ENTRY",E.LEAVE="LEAVE",E.RIGHTMOUSEDOWN="RIGHT-MOUSE-DOWN",E.RIGHTMOUSEUP="RIGHT-MOUSE-UP",E.WINDOWCLOSE="WINDOW-CLOSE"}(OEEvents=exports.OEEvents||(exports.OEEvents={}));

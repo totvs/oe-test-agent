@@ -1,4 +1,4 @@
-const gulp = require('gulp4');
+const gulp = require('gulp');
 
 /**
  * clean:
@@ -20,13 +20,11 @@ gulp.task('copy', () =>
  * Compile TypeScript sources and move the compiled files to the "dist"
  * directory.
  */
-gulp.task('compile', gulp.series('clean', () => {
+gulp.task('compile', gulp.series(() => {
   const ts = require('gulp-typescript');
   const tsProject = ts.createProject('./tsconfig.json');
 
-  return gulp.src(['./src/**/*.ts'])
-    .pipe(tsProject())
-    .pipe(gulp.dest('./dist'));
+  return gulp.src(['./src/**/*.ts']).pipe(tsProject()).pipe(gulp.dest('./dist'));
 }));
 
 /**

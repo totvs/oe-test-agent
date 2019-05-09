@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="oe-test-agent" default="build" basedir="." xmlns:sonar="antlib:org.sonar.ant">
+    
+    <property name="dlc.dir" value="C:/dlc117" description="OpenEdge DLC Home"/>
+    <property name="prj.dir" value="${basedir}" description="Root folder"/>
+    <property name="lib.dir" value="${prj.dir}/lib" description="OpenEdge and AutoIt compile executable folder"/>
+    <property name="abl.dir" value="${prj.dir}/src/abl" description="OpenEdge source code folder"/>
+    <property name="abl.bin.dir" value="${prj.dir}/dist/abl" description="OpenEdge compiled folder"/>
+	<property name="rbt.src" value="${prj.dir}/src/robot/robot.au3" description="AutoIt Robot source code file"/>
+	<property name="rbt.bin" value="${prj.dir}/dist/robot/robot.exe" description="AutoIt Robot compiled file"/>
+
+    <property name="propath" value="${abl.dir}"/>
+
+    <taskdef resource="PCT.properties" classpath="${lib.dir}/PCT.jar" loaderRef="pct"/>
+    <typedef resource="types.properties" classpath="${lib.dir}/PCT.jar" loaderRef="pct"/>
+    <DlcHome value="${dlc.dir}"/>
+
+    <target name="init">
+		<delete dir="dist"/>
+		<mkdir dir="dist/abl"/>
+		<mkdir dir="dist/robot"/>
+	</target>
+	
+	<target name="build-abl">
+        <PCTCompile cpStream="ibm850" tempDir="C:/tmp" destDir="${abl.bin.dir}" relativePaths="true" displayFiles="1">
+            <propath>
+                <pathelement location="${propath}"/>
+            </propath>
+
+            <fileset dir="${abl.dir}" includes="**/*.p,**/*.w,**/*.cls"/>
+        </PCTCompile>
+		
+		<delete dir="${abl.bin.dir}/.pct"/>
+    </target>
+	
+	<target name="build-robot">
+		<exec executable="${lib.dir}/autoit/Aut2Exe/Aut2exe.exe">
+			<arg value="/in"/>
+			<arg value="${rbt.src}"/>
+			<arg value="/out"/>
+			<arg value="${rbt.bin}"/>
+		</exec>
+    </target>
+	
+	<target name="build" depends="init,build-abl,build-robot"/>
+</project>
