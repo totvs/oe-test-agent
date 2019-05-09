@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project name="oe-test-agent" default="build" basedir="." xmlns:sonar="antlib:org.sonar.ant">
-    
-    <property name="dlc.dir" value="C:/dlc117" description="OpenEdge DLC Home"/>
+
+    <property name="dlc.dir" value="C:/dlc116" description="OpenEdge DLC Home"/>
     <property name="prj.dir" value="${basedir}" description="Root folder"/>
     <property name="lib.dir" value="${prj.dir}/lib" description="OpenEdge and AutoIt compile executable folder"/>
     <property name="abl.dir" value="${prj.dir}/src/abl" description="OpenEdge source code folder"/>
@@ -20,19 +20,19 @@
 		<mkdir dir="dist/abl"/>
 		<mkdir dir="dist/robot"/>
 	</target>
-	
+
 	<target name="build-abl">
-        <PCTCompile cpStream="ibm850" tempDir="C:/tmp" destDir="${abl.bin.dir}" relativePaths="true" displayFiles="1">
+        <PCTCompile dateFormat="dmy" cpStream="ibm850" tempDir="C:/tmp" destDir="${abl.bin.dir}" graphicalMode="true" relativePaths="true">
             <propath>
                 <pathelement location="${propath}"/>
             </propath>
 
             <fileset dir="${abl.dir}" includes="**/*.p,**/*.w,**/*.cls"/>
         </PCTCompile>
-		
+
 		<delete dir="${abl.bin.dir}/.pct"/>
     </target>
-	
+
 	<target name="build-robot">
 		<exec executable="${lib.dir}/autoit/Aut2Exe/Aut2exe.exe">
 			<arg value="/in"/>
@@ -41,6 +41,6 @@
 			<arg value="${rbt.bin}"/>
 		</exec>
     </target>
-	
+
 	<target name="build" depends="init,build-abl,build-robot"/>
 </project>

@@ -24,7 +24,7 @@ npm i oe-test-agent
 
 # Changelog
 
-## **1.1.0**:
+## **1.1.1**, **1.1.0**:
 ### **BREAKING CHANGES**
   - The `delete` method was redefined to expect a where clause and not an object anymore
   - The returns was changed to return only a `Promise<boolean>`
