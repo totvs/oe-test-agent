@@ -191,11 +191,8 @@ PROCEDURE AgentIO PRIVATE:
         WHEN "UPDATE" THEN
             RUN Update(INPUT aParams[1], INPUT aParams[2], INPUT aParams[3], OUTPUT cOutput).
 
-        WHEN "DELETE" THEN
-            RUN Delete(INPUT aParams[1], INPUT aParams[2], INPUT aParams[3], OUTPUT cOutput).
-
-        WHEN "DELETEALL" THEN                                       
-            RUN DeleteAll(INPUT aParams[1], INPUT aParams[2], OUTPUT cOutput).
+        WHEN "DELETE" THEN                                       
+            RUN Delete(INPUT aParams[1], INPUT aParams[2], OUTPUT cOutput).
 
         WHEN "RUN" THEN
             RUN Run(INPUT aParams[1], INPUT aParams[2], OUTPUT cOutput).
@@ -901,85 +898,6 @@ END PROCEDURE.
 ------------------------------------------------------------------------------*/
 PROCEDURE Delete PRIVATE:
     DEFINE INPUT  PARAMETER cTable  AS CHARACTER NO-UNDO.
-    DEFINE INPUT  PARAMETER cData   AS CHARACTER NO-UNDO.
-    DEFINE INPUT  PARAMETER cIndex  AS CHARACTER NO-UNDO.
-    DEFINE OUTPUT PARAMETER cOutput AS CHARACTER NO-UNDO.
-
-    DEFINE VARIABLE oData   AS JsonObject NO-UNDO.
-    DEFINE VARIABLE oIndex  AS JsonArray  NO-UNDO.
-    DEFINE VARIABLE oTable  AS JsonArray  NO-UNDO.
-
-    DEFINE VARIABLE nData   AS INTEGER    NO-UNDO.
-    DEFINE VARIABLE hBuffer AS HANDLE     NO-UNDO.
-    DEFINE VARIABLE cWhere  AS CHARACTER  NO-UNDO.
-    DEFINE VARIABLE lStatus AS LOGICAL    NO-UNDO.
-    DEFINE VARIABLE cError  AS CHARACTER  NO-UNDO.
-
-    /* Convert the data to JsonObject */
-    RUN ParseChar2JsonObject IN hUtils (INPUT cData, OUTPUT oData).
-
-    /* Convert the index columns to JsonArray */
-    RUN ParseChar2JsonArray IN hUtils (INPUT cIndex, OUTPUT oIndex).
-
-    /* Get the records from the informed table */
-    oTable = oData:GetJsonArray(cTable).
-
-    /* Creates table BUFFER for creating the informed data */
-    CREATE BUFFER hBuffer FOR TABLE cTable.
-
-    /* Clears ERROR-STATUS */
-    RUN ClearErrorStatus.
-
-    DELETERECORDS:
-    DO  TRANSACTION:
-        DO  nData = 1 TO oTable:Length:                                                                                                                      
-            /* Generate a WHERE clause for the DELETE command */
-            RUN GetStatementWhereClause(INPUT hBuffer, INPUT oTable:GetJsonObject(nData), INPUT oIndex, OUTPUT cWhere).
-
-            hBuffer:FIND-FIRST(cWhere, EXCLUSIVE-LOCK, NO-WAIT) NO-ERROR.
-
-            /* If the record was already deleted, don't throw an error */
-            IF  hBuffer:AVAILABLE THEN
-            DO:
-                RUN DoLog IN hUtils (INPUT "DELETE", INPUT "Deleting record at ~"" + cTable + "~" using WHERE clause ~"" + cWhere + "~"").
-                lStatus = hBuffer:BUFFER-DELETE() NO-ERROR.
-
-                IF  NOT lStatus THEN
-                DO:
-                    cError = ERROR-STATUS:GET-MESSAGE(1).
-                    UNDO DELETERECORDS, LEAVE DELETERECORDS.
-                END.
-            END.
-
-            lStatus = hBuffer:BUFFER-RELEASE() NO-ERROR.
-
-            IF  NOT lStatus THEN
-            DO:
-                cError = ERROR-STATUS:GET-MESSAGE(1).
-                UNDO DELETERECORDS, LEAVE DELETERECORDS.
-            END.
-        END.
-    END.
-
-    IF  lStatus THEN
-        cOutput = "OK".
-    ELSE
-        cOutput = "NOK|" + cError.
-
-    FINALLY:
-        DELETE OBJECT hBuffer NO-ERROR.
-        DELETE OBJECT oTable  NO-ERROR.
-        DELETE OBJECT oIndex  NO-ERROR.
-        DELETE OBJECT oData   NO-ERROR.
-    END FINALLY.
-END PROCEDURE.
-
-/*------------------------------------------------------------------------------
- Purpose: Deletes all the records of the informed table.
- Notes:
-------------------------------------------------------------------------------*/
-PROCEDURE DeleteAll PRIVATE:
-    DEFINE INPUT  PARAMETER cTable  AS CHARACTER NO-UNDO.
     DEFINE INPUT  PARAMETER cWhere  AS CHARACTER NO-UNDO.
     DEFINE OUTPUT PARAMETER cOutput AS CHARACTER NO-UNDO.
 
@@ -993,19 +911,14 @@ PROCEDURE DeleteAll PRIVATE:
     CREATE QUERY hQuery.
     hQuery:SET-BUFFERS(hBuffer).
 
-    IF cWhere = "" THEN DO:
-        hQuery:QUERY-PREPARE("FOR EACH " + cTable + " NO-LOCK").
-    END.    
-    ELSE DO:
-        hQuery:QUERY-PREPARE("FOR EACH " + cTable + " WHERE " + cWhere + " NO-LOCK").
-    END.
-    
+    hQuery:QUERY-PREPARE("FOR EACH " + cTable + " WHERE " + cWhere + " NO-LOCK").
+
     hQuery:QUERY-OPEN().
     
     /* Clears ERROR-STATUS */
     RUN ClearErrorStatus.
 
-    DELETEALLRECORDS:
+    DELETERECORDS:
     DO  TRANSACTION:                                                                                                                    
 
         hQuery:GET-FIRST(EXCLUSIVE-LOCK, NO-WAIT).
@@ -1014,13 +927,13 @@ PROCEDURE DeleteAll PRIVATE:
 
             IF  hBuffer:AVAILABLE THEN
             DO:
-                RUN DoLog IN hUtils (INPUT "DELETEALL", INPUT "Deleting all the records at ~"" + cTable + "~" using WHERE clause ~"" + cWhere + "~"").
+                RUN DoLog IN hUtils (INPUT "DELETE", INPUT "Deleting record at ~"" + cTable + "~" using WHERE clause ~"" + cWhere + "~"").
                 lStatus = hBuffer:BUFFER-DELETE() NO-ERROR.
 
                 IF  NOT lStatus THEN
                 DO:
                     cError = ERROR-STATUS:GET-MESSAGE(1).
-                    UNDO DELETEALLRECORDS, LEAVE DELETEALLRECORDS.
+                    UNDO DELETERECORDS, LEAVE DELETERECORDS.
                 END.
 
                 hQuery:GET-NEXT(EXCLUSIVE-LOCK, NO-WAIT).
@@ -1032,7 +945,7 @@ PROCEDURE DeleteAll PRIVATE:
         IF  NOT lStatus THEN
         DO:
             cError = ERROR-STATUS:GET-MESSAGE(1).
-            UNDO DELETEALLRECORDS, LEAVE DELETEALLRECORDS.
+            UNDO DELETERECORDS, LEAVE DELETERECORDS.
         END.
     END.
 

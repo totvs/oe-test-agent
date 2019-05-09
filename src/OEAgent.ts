@@ -400,47 +400,20 @@ export class OEAgent {
    * Deletes one or more records of the informed table.
    *
    * @param table Table name.
-   * @param data TEMP-TABLE "like" JSON with the records.
-   * @param index Table index columns.
+   * @param where Optional delete's WHERE clause.
+   *              Without this param, all the records of the informed table will be deleted.
    *
    * @returns A promise result of the command.
    *
    * @example
    * ```typescript
-   * const oe = new OEAgent();
-   * const data = {
-   *   "Department": [{
-   *     "DeptCode": "PRC"
-   *   },{
-   *     "DeptCode": "HRM"
-   *   }]
-   * };
    *
-   * oe.delete("Department", data, ["DeptCode"]);
+   * oe.delete('Department', 'DeptCode = "123"');
+   * oe.delete("Department");
    * ```
    */
-  public delete(table: string, data: {}, index: string[]): Promise<boolean | Error> {
-    return browser.call(() => this.oeSocket.send(true, 'DELETE', table, JSON.stringify(data), JSON.stringify(index)).then(() => true)) as Promise<boolean | Error>;
-  }
-
-    /**
-     * Deletes all the records of the informed table.
-     *
-     * @param table Table name.
-     * @param where Optional delete's WHERE clause.
-     *              Without this param, all the records of the informed table will be deleted.
-     *
-     * @returns A promise result of the command.
-     *
-     * @example
-     * ```typescript
-     *
-     * oe.deleteAll('Department', 'DeptCode = "123"');
-     * oe.deleteAll("Department");
-     * ```
-     */
-  public deleteAll(table: string, where?: string): Promise<boolean | Error> {
-    return browser.call(() => this.oeSocket.send(true, 'DELETEALL', table, where || "").then(() => true)) as Promise<boolean | Error>;
+  public delete(table: string, where = "1=1"): Promise<boolean | Error> {
+    return browser.call(() => this.oeSocket.send(true, 'DELETE', table, where).then(() => true)) as Promise<boolean | Error>;
   }
 
   /**
