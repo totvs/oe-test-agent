@@ -434,9 +434,9 @@ PROCEDURE Select PRIVATE:
     IF  RETURN-VALUE = "NOK" THEN
         RETURN.
 
-    IF  hElement:TYPE <> "COMBO-BOX" AND hElement:TYPE <> "RADIO-SET" THEN
+    IF  hElement:TYPE <> "COMBO-BOX" AND hElement:TYPE <> "RADIO-SET" AND hElement:TYPE <> "SELECTION-LIST" THEN
     DO:
-        cOutput = "NOK|Element ~"" + hElement:NAME + "~" isn't a COMBO-BOX nor a RADIO-SET!".
+        cOutput = "NOK|Element ~"" + hElement:NAME + "~" isn't a COMBO-BOX nor a RADIO-SET nor a SELECTION-LIST!".
         RETURN.
     END.
 
