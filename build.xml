@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project name="oe-test-agent" default="build" basedir="." xmlns:sonar="antlib:org.sonar.ant">
 
-    <property name="dlc.dir" value="C:/dlc116" description="OpenEdge DLC Home"/>
+    <property name="dlc.dir" value="C:/dlc117" description="OpenEdge DLC Home"/>
     <property name="prj.dir" value="${basedir}" description="Root folder"/>
-    <property name="lib.dir" value="${prj.dir}/lib" description="OpenEdge and AutoIt compile executable folder"/>
+    <property name="lib.dir" value="${prj.dir}/vendor" description="OpenEdge and AutoIt compile executable folder"/>
     <property name="abl.dir" value="${prj.dir}/src/abl" description="OpenEdge source code folder"/>
     <property name="abl.bin.dir" value="${prj.dir}/dist/abl" description="OpenEdge compiled folder"/>
 	<property name="rbt.src" value="${prj.dir}/src/robot/robot.au3" description="AutoIt Robot source code file"/>

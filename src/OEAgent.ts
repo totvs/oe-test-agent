@@ -43,7 +43,7 @@ export class OEAgent {
       const suc = new Promise((res) => setTimeout(() => res({ status: true }), 10_000));
       const err = new Promise((res) => run.on('error', (error: Error) => res({ status: false, error: error })));
 
-      return Promise.race([suc, err]).then((result) => {
+      return Promise.race([suc, err]).then((result: any) => {
         return result['status'] ? this.connect(config.host, config.port).then(resolve) : reject(result['error']);
       });
     })) as Promise<boolean>;
