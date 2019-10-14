@@ -24,6 +24,16 @@ npm i oe-test-agent
 
 ## Changelog
 
+### **1.1.3**
+
+- Now it's possible to send a string value at `windowSendKeys` method.
+- **Brazilian Portuguese** titles are now supported at `alertClick` methods.
+- Now it's possible to send more than one title to `Robot` find a window -
+  delimited by | characters.
+- Created the method `takeScreenshot` to take an OS screenshot and return the
+  `Base64` value from the image.
+- Now it's possible to update the default timeout value.
+
 ### **1.1.2**
 
 - Solved a bud when using `select` method with a `SELECT` widget.
