@@ -24,6 +24,12 @@ npm i oe-test-agent
 
 ## Changelog
 
+### **1.1.4**
+
+- The method `takeScreenshot` was changed to return the image filenames.
+- Created the method `takeScreenshotFromProcess` to take a screenshot from each
+  window of a process.
+
 ### **1.1.3**
 
 - Now it's possible to send a string value at `windowSendKeys` method.
@@ -104,32 +110,3 @@ If you are familiar with Progress OE applications, you probably know that visual
 To solve that, we created "Robot.exe". This tool - built using ["Auto It"](https://www.autoitscript.com) - simulates a mouse click to the opened message and can also send keyboard events to any other Windows application that is currently open.
 
 > **Heads up!** You may need to sign "Robot.exe" with a valid certificate or add it to your antivirus whitelist.
-
-## Sample Test
-
-> At this point we assume that you've already did an `npm install` command for this project.
-
-To test our sample, first you need to download both ZIP files available [here](https://community.progress.com/community_groups/openedge_general/w/openedgegeneral/1162.download-11-0-documentation-example-procedure-and-sample-files). Then, create a folder called "ABL" and extract the examples in the "examples" folder and the samples in the "samples" folder, both of them inside "ABL". In our case the "ABL" folder is available at C:\\, but your structure should be similar as bellow:
-
-```bash
-C:\
-└── ABL/
-    ├── examples/
-    │   ├── prodoc/
-    ├── samples/
-    │   ├── src/
-    │   ├── tutorial/
-    │   ├── webinstall/
-```
-
-Inside the "ABL" folder, you have to create a parameter file `progress.pf` with the content bellow:
-
-```ini
-# Change C:/dlc116 with your own DLC home.
--db C:/dlc116/sports2000.db -1
--clientlog C:\tmp\oe-test-agent.log
-```
-
-In a command line prompt, navigate to the `test` folder inside the `oe-test-agent` project and type: `npm run test`. If everything is correct, your test should start and run without any problems.
-
-![npm-test](https://raw.githubusercontent.com/totvs/oe-test-agent/master/resources/npm-test.gif 'npm test')
