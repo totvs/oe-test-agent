@@ -15,6 +15,7 @@ import { MessageType, OEUtils } from './OEUtils';
  * Progress OpenEdge applications.
  */
 export class OEAgent {
+  private static ROBOTEXE = `${__dirname.replace(/\\/g, '/')}/robot/Robot.exe`;
   /**
    * Default TIMEOUT value for waiting events.
    */
@@ -212,7 +213,9 @@ export class OEAgent {
    * @returns A promise result of the command.
    */
   public sendKeys(value: string | number, element: OEElement): Promise<boolean> {
-    return browser.call(() => this.oeSocket.send(true, 'SENDKEYS', element.id, value).then(() => true)) as Promise<boolean>;
+    return browser.call(() => {
+      return this.oeSocket.send(true, 'SENDKEYS', element.id, value).then(() => true);
+    }) as Promise<boolean>;
   }
 
   /**
@@ -224,7 +227,9 @@ export class OEAgent {
    * @returns A promise result of the command.
    */
   public check(check: boolean, element: OEElement): Promise<boolean> {
-    return browser.call(() => this.oeSocket.send(true, 'CHECK', element.id, check).then(() => true)) as Promise<boolean>;
+    return browser.call(() => {
+      return this.oeSocket.send(true, 'CHECK', element.id, check).then(() => true);
+    }) as Promise<boolean>;
   }
 
   /**
@@ -293,7 +298,7 @@ export class OEAgent {
    */
   public apply(event: OEEvents | string, element: OEElement, wait = false): Promise<boolean> {
     return browser.call(() => {
-      return this.oeSocket.send(wait, 'APPLY', element.id, event).then(() => browser.sleep(1000)).then(() => true);
+      return this.oeSocket.send(wait, 'APPLY', element.id, event).then(() => browser.sleep(1_000)).then(() => true);
     }) as Promise<boolean>;
   }
 
@@ -481,7 +486,7 @@ export class OEAgent {
       OEUtils.consoleLogMessage(`(Robot) Searching "${title}" window`, MessageType.INFO);
 
       try {
-        execSync(`${__dirname.replace(/\\/g, '/')}/robot/Robot.exe -t ${timeout} -w "${title}"`);
+        execSync(`"${OEAgent.ROBOTEXE}" -t ${timeout} -w "${title}"`);
       } catch (error) {
         winExists = false;
       }
@@ -513,10 +518,10 @@ export class OEAgent {
       OEUtils.consoleLogMessage(`(Robot) Sending keyboard events "${allKeys}" to "${title}" window`, MessageType.INFO);
 
       try {
-        execSync(`${__dirname.replace(/\\/g, '/')}/robot/Robot.exe -t ${timeout} -w "${title}" -k ${allKeys}`);
+        execSync(`"${OEAgent.ROBOTEXE}" -t ${timeout} -w "${title}" -k "${allKeys}"`);
         resolve(true);
       } catch (error) {
-        reject(error);
+        reject(error.stderr);
       }
     })) as Promise<boolean>;
   }
@@ -575,31 +580,55 @@ export class OEAgent {
       OEUtils.consoleLogMessage(`(Robot) Sending "${button}" click to "${title}" alert-box message`, MessageType.INFO);
 
       try {
-        execSync(`${__dirname.replace(/\\/g, '/')}/robot/Robot.exe -t ${timeout} -w "${title}" -b ${button}`);
+        execSync(`"${OEAgent.ROBOTEXE}" -t ${timeout} -w "${title}" -b "${button}"`);
         resolve(true);
       } catch (error) {
-        reject(error);
+        reject(error.stderr);
       }
     })) as Promise<boolean>;
   }
 
   /**
-   * Takes a screenshot and save it into the provided pathname.
+   * Takes a screenshot of each window from the informed process.
    *
    * @param pathname Absolute pathname of the screenshot file.
+   * @param process Process name.
+   * @param exclusions List of windows titles that will be excluded.
    * @param timeout Waiting timeout.
    *
-   * @returns A promise result of the Base64 of the screenshot file.
+   * @returns A promise result with a list of the images filenames.
    */
-  public takeScreenshot(pathname: string, timeout = OEAgent.DEFAULT_TIMEOUT): Promise<string> {
+  public takeScreenshotFromProcess(pathname: string, process = 'prowin32.exe', exclusions: string[] = [], timeout = OEAgent.DEFAULT_TIMEOUT): Promise<string[]> {
     return browser.call(() => new Promise((resolve, reject) => {
-      OEUtils.consoleLogMessage(`(Robot) Taking screenshot to the file Sending "${pathname}"`, MessageType.INFO);
+      OEUtils.consoleLogMessage(`(Robot) Taking screenshot of the process "${process}" and saving in "${pathname}"`, MessageType.INFO);
 
       try {
-        const base64 = execSync(`${__dirname.replace(/\\/g, '/')}/robot/Robot.exe -s ${pathname}`);
-        resolve(base64.toString());
+        const buffer = execSync(`"${OEAgent.ROBOTEXE}" -s "${pathname}" -p "${process}" -e "${exclusions.join('|')}"`);
+        resolve(buffer.toString().split('|'));
       } catch (error) {
-        reject(error);
+        reject(error.stderr);
+      }
+    })) as Promise<string[]>;
+  }
+
+  /**
+   * Takes a screenshot of the window with the informed title.
+   *
+   * @param pathname Absolute pathname of the screenshot file.
+   * @param title Window title.
+   * @param timeout Waiting timeout.
+   *
+   * @returns A promise result with the image filename.
+   */
+  public takeScreenshot(pathname: string, title: string, timeout = OEAgent.DEFAULT_TIMEOUT): Promise<string> {
+    return browser.call(() => new Promise((resolve, reject) => {
+      OEUtils.consoleLogMessage(`(Robot) Taking screenshot of the window "${title}" and saving in "${pathname}"`, MessageType.INFO);
+
+      try {
+        const buffer = execSync(`"${OEAgent.ROBOTEXE}" -s "${pathname}" -w "${title}"`);
+        resolve(buffer.toString());
+      } catch (error) {
+        reject(error.stderr);
       }
     })) as Promise<string>;
   }

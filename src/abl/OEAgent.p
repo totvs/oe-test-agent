@@ -39,16 +39,16 @@ DEFINE FRAME hFrame
 IF  SESSION:DISPLAY-TYPE = "GUI":U THEN
     CREATE WINDOW hWindow
         ASSIGN
-        HIDDEN       = TRUE
-        TITLE        = "OE TEST AGENT"
-        HEIGHT       = 01
-        WIDTH        = 60
-        RESIZE       = FALSE
-        SCROLL-BARS  = FALSE
-        STATUS-AREA  = FALSE
-        THREE-D      = TRUE
-        MESSAGE-AREA = FALSE
-        SENSITIVE    = TRUE.
+            HIDDEN       = TRUE
+            TITLE        = "OE TEST AGENT"
+            HEIGHT       = 01
+            WIDTH        = 60
+            RESIZE       = FALSE
+            SCROLL-BARS  = FALSE
+            STATUS-AREA  = FALSE
+            THREE-D      = TRUE
+            MESSAGE-AREA = FALSE
+            SENSITIVE    = TRUE.
 ELSE
     hWindow = CURRENT-WINDOW.
 

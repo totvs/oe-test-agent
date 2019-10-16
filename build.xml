@@ -6,8 +6,8 @@
     <property name="lib.dir" value="${prj.dir}/vendor" description="OpenEdge and AutoIt compile executable folder"/>
     <property name="abl.dir" value="${prj.dir}/src/abl" description="OpenEdge source code folder"/>
     <property name="abl.bin.dir" value="${prj.dir}/dist/abl" description="OpenEdge compiled folder"/>
-	<property name="rbt.src" value="${prj.dir}/src/robot/robot.au3" description="AutoIt Robot source code file"/>
-	<property name="rbt.bin" value="${prj.dir}/dist/robot/robot.exe" description="AutoIt Robot compiled file"/>
+	<property name="rbt.src" value="${prj.dir}/src/robot/Robot.au3" description="AutoIt Robot source code file"/>
+	<property name="rbt.bin" value="${prj.dir}/dist/robot/Robot.exe" description="AutoIt Robot compiled file"/>
 
     <property name="propath" value="${abl.dir}"/>
 
