@@ -1,6 +1,6 @@
 #include <AutoItConstants.au3>
 #include <Array.au3>
-#include <ScreenCapture.au3>
+#include <ScreenCaptureMod.au3>
 #include <WinAPICom.au3>
 
 ;
@@ -298,9 +298,9 @@ EndFunc
 ;
 Func TakeScreenshot($vWindow, $sFile)
    ;Return Capture_Window($vWindow, $sFile) <> 0
-   WinSetState($vWindow, "", @SW_RESTORE) ; Restores the windows (if its minimized)
+   ;WinSetState($vWindow, "", @SW_RESTORE) ; Restores the windows (if its minimized)
    WinActivate($vWindow) ; Activates the window on top to take the screenshot
-   Return _ScreenCapture_CaptureWnd($sFile, $vWindow)
+   Return _ScreenCapture_CaptureWnd_mod($sFile, $vWindow, False)
 EndFunc
 
 ;
