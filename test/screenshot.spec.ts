@@ -14,13 +14,13 @@ describe('Screenshot', () => {
     oe.run('helloworld.p');
   });
 
-  fit('should take a screenshot of a window', () => {
+  it('should take a screenshot of a window', () => {
     const file = oe.takeScreenshot(screenshot, 'Hello World');
     file.then(filename => screenshots.push(filename));
     expect(file.then(filename => fs.existsSync(filename))).toBeTruthy();
   });
 
-  fit('should take a screenshot of the process windows', () => {
+  it('should take a screenshot of the process windows', () => {
     const files = oe.takeScreenshotFromProcess(screenshot, 'prowin32.exe');
     files.then(filenames => filenames.forEach(filename => screenshots.push(filename)));
     files.then(filenames => filenames.forEach(filename => expect(fs.existsSync(filename)).toBeTruthy()));

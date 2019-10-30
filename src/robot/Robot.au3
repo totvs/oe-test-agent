@@ -169,17 +169,17 @@ EndIf
 If $sPath Then
    Local $bTaken = False
    Local $sFiles = ""
-   Local $aWindows[2]
 
    If $sProcess = "" And $hWindow = -1 Then
 	  ExitWithError(-6, "Process name or window title not informed.")
    EndIf
 
    If $hWindow > 0 Then
-	  $aWindows[0] = 1
-	  $aWindows[1] = $hWindow
+	  Local $aWindows[2][2]
+	  $aWindows[0][0] = 1
+	  $aWindows[1][1] = $hWindow
    Else
-	  $aWindows = GetWindowsByProcess($sProcess)
+	  Local $aWindows = GetWindowsByProcess($sProcess)
    EndIf
 
    If Not FileExists($sPath) Then

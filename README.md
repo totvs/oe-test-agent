@@ -24,6 +24,12 @@ npm i oe-test-agent
 
 ## Changelog
 
+### **1.1.5**
+
+- Solved a bug when running an OE application without having the source (`.p`)
+  in the PROPATH.
+- Solved a bug when taking a screenshot of a window.
+
 ### **1.1.4**
 
 - The method `takeScreenshot` was changed to return the image filenames.

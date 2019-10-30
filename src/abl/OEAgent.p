@@ -968,10 +968,7 @@ PROCEDURE Run PRIVATE:
     DEFINE OUTPUT PARAMETER cOutput AS CHARACTER NO-UNDO INITIAL ?.
 
     /* Connect Runner SOCKET client */
-    IF  SEARCH(cRun) = ? THEN
-        cOutput = "NOK|OE application ~"" + cRun + "~" not found!".
-    ELSE
-        RUN RunApplication IN hUtils (INPUT cRun, INPUT cParams).
+    RUN RunApplication IN hUtils (INPUT cRun, INPUT cParams).
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------

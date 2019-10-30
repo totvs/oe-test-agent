@@ -1,14 +1,12 @@
 import { Config } from 'protractor';
 
-import { OEConfig } from '../dist';
-
 const propath = `${__dirname.replace(/\\/g, '/')}/abl`;
 
 export const config: Config = {
   capabilities: {
-    browserName: 'firefox',
-    'moz:firefoxOptions': {
-      args: ['--headless']
+    browserName: 'chrome',
+    chromeOptions: {
+      args: ['--headless', '--disable-gpu']
     }
   },
 
@@ -25,6 +23,10 @@ export const config: Config = {
   },
 
   suites: {
-    oeRobot: ['alertboxes.spec.js', 'screenshot.spec.js', 'systemdialog.spec.js']
+    oeRobot: [
+      'alertboxes.spec.js',
+      'screenshot.spec.js',
+      'systemdialog.spec.js'
+    ]
   }
 };
