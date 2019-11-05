@@ -24,6 +24,10 @@ npm i oe-test-agent
 
 ## Changelog
 
+### **1.1.6**
+
+- Solved a bug when using `select` to an invalid value.
+
 ### **1.1.5**
 
 - Solved a bug when running an OE application without having the source (`.p`)

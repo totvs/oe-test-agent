@@ -449,23 +449,19 @@ PROCEDURE Select PRIVATE:
     /* Force focus to the WIDGET so ENTRY and LEAVE events are fired */
     APPLY "ENTRY" TO hElement.
 
-    IF  lPartial THEN
-    DO:
+    IF  CAN-QUERY(hElement:HANDLE, "LIST-ITEMS") THEN
         nItems = NUM-ENTRIES(hElement:LIST-ITEMS).
-
-        DO  nItem = 1 TO nItems:
-            IF  ENTRY(nItem,hElement:LIST-ITEMS) MATCHES ("*" + cValue + "*") THEN
-            DO:
-                hElement:SCREEN-VALUE = ENTRY(nItem,hElement:LIST-ITEMS).
-                cOutput = "OK".
-                LEAVE.
-            END.
-        END.
-    END.
     ELSE
-    DO:
-        hElement:SCREEN-VALUE = cValue.
-        cOutput = "OK".
+        nItems = 0.
+
+    DO  nItem = 1 TO nItems:
+        IF  lPartial AND ENTRY(nItem,hElement:LIST-ITEMS) MATCHES ("*" + cValue + "*")
+        OR  ENTRY(nItem,hElement:LIST-ITEMS) = cValue THEN
+        DO:
+            hElement:SCREEN-VALUE = ENTRY(nItem,hElement:LIST-ITEMS).
+            cOutput = "OK".
+            LEAVE.
+        END.
     END.
 
     IF  cOutput = ? OR cOutput = "" THEN
@@ -629,12 +625,13 @@ PROCEDURE Get PRIVATE:
     hCall:CALL-NAME = cAttribute.
     hCall:INVOKE NO-ERROR.
 
-    cValue = STRING(hCall:RETURN-VALUE).
-
     IF  ERROR-STATUS:ERROR THEN
         cOutput = "NOK|" + ERROR-STATUS:GET-MESSAGE(1).
     ELSE
+    DO:
+        cValue = STRING(hCall:RETURN-VALUE).
         cOutput = "OK|" + cValue.
+    END.
 
     hCall:CLEAR.
     DELETE OBJECT hCall NO-ERROR.

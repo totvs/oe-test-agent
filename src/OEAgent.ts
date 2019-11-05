@@ -16,6 +16,7 @@ import { MessageType, OEUtils } from './OEUtils';
  */
 export class OEAgent {
   private static ROBOTEXE = `${__dirname.replace(/\\/g, '/')}/robot/Robot.exe`;
+
   /**
    * Default TIMEOUT value for waiting events.
    */
@@ -62,7 +63,7 @@ export class OEAgent {
 
   /**
    * Returns the agent server connection status.
-   * @returns ```true``` if the agent server is connected.
+   * @returns `true` if the agent server is connected.
    */
   public connected(): boolean {
     return this.oeSocket.connected();
@@ -75,7 +76,7 @@ export class OEAgent {
    * @param title OE window title (full or partial).
    * @param timeout Waiting timeout.
    *
-   * @returns Window ```OEElement``` instance.
+   * @returns Window `OEElement` instance.
    */
   public waitForWindow(title: string, timeout = OEAgent.DEFAULT_TIMEOUT): OEElement {
     const element = new OEElement(this);
@@ -98,7 +99,7 @@ export class OEAgent {
    * Searches for an OE window with the informed title.
    *
    * @param title OE window title (full or partial).
-   * @returns Window ```OEElement``` instance.
+   * @returns Window `OEElement` instance.
    */
   public findWindow(title: string): OEElement {
     const element: OEElement = new OEElement(this);
@@ -114,13 +115,13 @@ export class OEAgent {
    * Wait until an OE widget is found with the informed name attribute or a
    * timeout error is raised.
    *
-   * @param name Widget ```NAME``` attribute.
-   * @param visible ```true``` to only search visible elements.
+   * @param name Widget `NAME` attribute.
+   * @param visible `true` to only search visible elements.
    * @param timeout Waiting timeout.
-   * @param parent Parent ```OEElement``` instance, if informed the agent
+   * @param parent Parent `OEElement` instance, if informed the agent
    * will consider a search only by its children.
    *
-   * @returns Widget ```OEElement``` instance.
+   * @returns Widget `OEElement` instance.
    */
   public waitForElement(name: string, visible = true, timeout = OEAgent.DEFAULT_TIMEOUT, parent?: OEElement): OEElement {
     const element = new OEElement(this);
@@ -142,12 +143,12 @@ export class OEAgent {
   /**
    * Searches for an OE widget with the informed name attribute.
    *
-   * @param name Widget ```NAME``` attribute.
-   * @param visible ```true``` to only search visible elements.
-   * @param parent Parent ```OEElement``` instance, if informed the agent
+   * @param name Widget `NAME` attribute.
+   * @param visible `true` to only search visible elements.
+   * @param parent Parent `OEElement` instance, if informed the agent
    * will consider a search only by its children.
    *
-   * @returns Widget ```OEElement``` instance.
+   * @returns Widget `OEElement` instance.
    */
   public findElement(name: string, visible = true, parent?: OEElement): OEElement {
     const element = new OEElement(this);
@@ -166,11 +167,11 @@ export class OEAgent {
    *
    * @param attr Attribute name.
    * @param value Attribute value.
-   * @param visible ```true``` to only search visible elements.
-   * @param parent Parent ```OEElement``` instance, if informed the agent
+   * @param visible `true` to only search visible elements.
+   * @param parent Parent `OEElement` instance, if informed the agent
    * will consider a search only by its children.
    *
-   * @returns Widget ```OEElement``` instance.
+   * @returns Widget `OEElement` instance.
    */
   public findElementByAttribute(attribute: OEAttributes, value: string, visible = true, parent?: OEElement): OEElement {
     const element = new OEElement(this);
@@ -185,9 +186,9 @@ export class OEAgent {
   }
 
   /**
-   * Returns if the widget ```OEElement``` is valid.
+   * Returns if the widget `OEElement` is valid.
 
-   * @param element Widget ```OEElement``` instance.
+   * @param element Widget `OEElement` instance.
    * @returns A promise result of the command.
    */
   public isElementValid(element: OEElement): Promise<boolean> {
@@ -195,9 +196,9 @@ export class OEAgent {
   }
 
   /**
-   * Clears the widget ```SCREEN-VALUE```.
+   * Clears the widget `SCREEN-VALUE`.
    *
-   * @param element Widget ```OEElement``` instance.
+   * @param element Widget `OEElement` instance.
    * @returns A promise result of the command.
    */
   public clear(element: OEElement): Promise<boolean> {
@@ -205,10 +206,10 @@ export class OEAgent {
   }
 
   /**
-   * Changes the widget ```SCREEN-VALUE```.
+   * Changes the widget `SCREEN-VALUE`.
    *
-   * @param value Widget's new ```SCREEN-VALUE```.
-   * @param element Widget ```OEElement``` instance.
+   * @param value Widget's new `SCREEN-VALUE`.
+   * @param element Widget `OEElement` instance.
    *
    * @returns A promise result of the command.
    */
@@ -221,8 +222,8 @@ export class OEAgent {
   /**
    * Checks/Unchecks a TOGGLE-BOX widget.
    *
-   * @param check ```true``` to check the widget.
-   * @param element Widget ```OEElement``` instance.
+   * @param check `true` to check the widget.
+   * @param element Widget `OEElement` instance.
    *
    * @returns A promise result of the command.
    */
@@ -236,8 +237,8 @@ export class OEAgent {
    * Selects a value in a COMBO-BOX or RADIO-SET widget.
    *
    * @param value Selection value.
-   * @param partial ```true``` if it's a partial value.
-   * @param element Widget ```OEElement``` instance.
+   * @param partial `true` if it's a partial value.
+   * @param element Widget `OEElement` instance.
    *
    * @returns A promise result of the command.
    */
@@ -251,7 +252,7 @@ export class OEAgent {
    * Selects a row in a BROWSE widget.
    *
    * @param row Row number.
-   * @param element Widget ```OEElement``` instance.
+   * @param element Widget `OEElement` instance.
    *
    * @returns A promise result of the command.
    */
@@ -265,7 +266,7 @@ export class OEAgent {
    * Moves a QUERY result pointer of a BROWSE widget to the specified row.
    *
    * @param row Row number.
-   * @param element Widget ```OEElement``` instance.
+   * @param element Widget `OEElement` instance.
    *
    * @returns A promise result of the command.
    */
@@ -276,9 +277,9 @@ export class OEAgent {
   }
 
   /**
-   * Applies a ```CHOOSE``` event to the widget.
+   * Applies a `CHOOSE` event to the widget.
    *
-   * @param element Widget ```OEElement``` instance.
+   * @param element Widget `OEElement` instance.
    * @returns A promise result of the command.
    */
   public choose(element: OEElement): Promise<boolean> {
@@ -291,8 +292,8 @@ export class OEAgent {
    * Applies an event to the widget.
    *
    * @param event Event name.
-   * @param element Widget ```OEElement``` instance.
-   * @param wait ```true``` to wait the ```APPLY``` event.
+   * @param element Widget `OEElement` instance.
+   * @param wait `true` to wait the `APPLY` event.
    *
    * @returns A promise result of the command.
    */
@@ -306,7 +307,7 @@ export class OEAgent {
    * Gets the widget's informed attribute value.
    *
    * @param attr Attribute name.
-   * @param element Widget ```OEElement``` instance.
+   * @param element Widget `OEElement` instance.
    *
    * @returns A promise result data of the command.
    */
@@ -319,7 +320,7 @@ export class OEAgent {
    *
    * @param attr Attribute name.
    * @param value Attribute value.
-   * @param element Widget ```OEElement``` instance.
+   * @param element Widget `OEElement` instance.
    *
    * @returns A promise result of the command.
    */
@@ -445,7 +446,7 @@ export class OEAgent {
   }
 
   /**
-   * Runs a ```PROCEDURE``` command or open an OE application.
+   * Runs a `PROCEDURE` command or open an OE application.
    *
    * @param run OE application path (full or partial according to PROPATH).
    * @param params Application input parameters.
