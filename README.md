@@ -26,7 +26,7 @@ npm i oe-test-agent
 
 ### **1.1.7**
 
-- Solved a bug when using `select` to an value of the one radio-set widget.
+- Solved a bug when using `select` to an value of a radio-set widget.
 
 ### **1.1.6**
 
