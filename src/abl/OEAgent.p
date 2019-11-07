@@ -456,10 +456,13 @@ PROCEDURE Select PRIVATE:
     ELSE IF CAN-QUERY(hElement:HANDLE, "RADIO-BUTTONS") THEN
         ASSIGN nItems  = NUM-ENTRIES(hElement:RADIO-BUTTONS)
                cValues = hElement:RADIO-BUTTONS.
+    ELSE IF CAN-QUERY(hElement:HANDLE, "LIST-ITEM-PAIRS") THEN
+        ASSIGN nItems  = NUM-ENTRIES(hElement:LIST-ITEM-PAIRS)
+               cValues = hElement:LIST-ITEM-PAIRS.
     ELSE
         ASSIGN nItems  = 0
                cValues = "".
-    
+
     DO  nItem = 1 TO nItems:
         IF lPartial AND ENTRY(nItem, cValues) MATCHES ("*" + cValue + "*")
         OR ENTRY(nItem, cValues) = cValue THEN
