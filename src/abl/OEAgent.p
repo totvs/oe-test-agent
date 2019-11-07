@@ -425,9 +425,10 @@ PROCEDURE Select PRIVATE:
     DEFINE INPUT  PARAMETER lPartial AS LOGICAL   NO-UNDO.
     DEFINE OUTPUT PARAMETER cOutput  AS CHARACTER NO-UNDO.
 
-    DEFINE VARIABLE hElement AS HANDLE  NO-UNDO.
-    DEFINE VARIABLE nItem    AS INTEGER NO-UNDO.
-    DEFINE VARIABLE nItems   AS INTEGER NO-UNDO.
+    DEFINE VARIABLE hElement AS HANDLE    NO-UNDO.
+    DEFINE VARIABLE nItem    AS INTEGER   NO-UNDO.
+    DEFINE VARIABLE nItems   AS INTEGER   NO-UNDO.
+    DEFINE VARIABLE cValues  AS CHARACTER NO-UNDO.
 
     RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
 
@@ -449,22 +450,27 @@ PROCEDURE Select PRIVATE:
     /* Force focus to the WIDGET so ENTRY and LEAVE events are fired */
     APPLY "ENTRY" TO hElement.
 
-    IF  CAN-QUERY(hElement:HANDLE, "LIST-ITEMS") THEN
-        nItems = NUM-ENTRIES(hElement:LIST-ITEMS).
+    IF CAN-QUERY(hElement:HANDLE, "LIST-ITEMS") THEN
+        ASSIGN nItems  = NUM-ENTRIES(hElement:LIST-ITEMS)
+               cValues = hElement:LIST-ITEMS.
+    ELSE IF CAN-QUERY(hElement:HANDLE, "RADIO-BUTTONS") THEN
+        ASSIGN nItems  = NUM-ENTRIES(hElement:RADIO-BUTTONS)
+               cValues = hElement:RADIO-BUTTONS.
     ELSE
-        nItems = 0.
-
+        ASSIGN nItems  = 0
+               cValues = "".
+    
     DO  nItem = 1 TO nItems:
-        IF  lPartial AND ENTRY(nItem,hElement:LIST-ITEMS) MATCHES ("*" + cValue + "*")
-        OR  ENTRY(nItem,hElement:LIST-ITEMS) = cValue THEN
+        IF lPartial AND ENTRY(nItem, cValues) MATCHES ("*" + cValue + "*")
+        OR ENTRY(nItem, cValues) = cValue THEN
         DO:
-            hElement:SCREEN-VALUE = ENTRY(nItem,hElement:LIST-ITEMS).
+            hElement:SCREEN-VALUE = ENTRY(nItem, cValues).
             cOutput = "OK".
             LEAVE.
         END.
     END.
 
-    IF  cOutput = ? OR cOutput = "" THEN
+    IF cOutput = ? OR cOutput = "" THEN
         cOutput = "NOK|Element ~"" + hElement:NAME + "~" doesn't have an item with value ~"" + cValue + "~".".
     ELSE
         cOutput = "OK".

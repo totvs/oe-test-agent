@@ -1,6 +1,6 @@
 {
   "name": "oe-test-agent",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "Progress utility for e2e tests with Protractor",
   "author": "TOTVS S/A",
   "license": "ISC",
