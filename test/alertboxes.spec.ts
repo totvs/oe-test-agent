@@ -16,14 +16,14 @@ describe('Alert Boxes', () => {
     oe.alertClick('Message', OEButtons.OK);
 
     // Wait the alert box to be closed.
-    expect(browser.wait(() => oe.windowExists('Message').then((exists) => !exists), 100)).toBeTruthy();
+    expect(browser.wait(() => oe.windowExists('Message').then((exists) => !exists), 500)).toBeTruthy();
   });
 
   it('should click on the OK button of the message with a custom title', () => {
     oe.alertClick('Custom Title', OEButtons.OK);
 
     // Wait the alert box to be closed.
-    expect(browser.wait(() => oe.windowExists('Custom Title').then((exists) => !exists), 100)).toBeTruthy();
+    expect(browser.wait(() => oe.windowExists('Custom Title').then((exists) => !exists), 500)).toBeTruthy();
   });
 
   it('should click on the YES button of the question message', () => {

@@ -24,7 +24,7 @@ npm i oe-test-agent
 
 ## Changelog
 
-### **1.1.12**
+### **1.1.13**
 
 - Solved a bug when using `select` to a value of a `COMBO-BOX` with `LIST-ITEM-PAIRS`.
 

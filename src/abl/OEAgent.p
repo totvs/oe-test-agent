@@ -428,9 +428,9 @@ PROCEDURE Select PRIVATE:
     DEFINE VARIABLE hElement AS HANDLE    NO-UNDO.
     DEFINE VARIABLE nItem    AS INTEGER   NO-UNDO.
     DEFINE VARIABLE cItem    AS CHARACTER NO-UNDO.
-    DEFINE VARIABLE nItems   AS INTEGER   NO-UNDO.
-    DEFINE VARIABLE cValues  AS CHARACTER NO-UNDO.
-    DEFINE VARIABLE lPairs   AS LOGICAL   NO-UNDO.
+    DEFINE VARIABLE nItems   AS INTEGER   NO-UNDO INITIAL 0.
+    DEFINE VARIABLE cValues  AS CHARACTER NO-UNDO INITIAL 0.
+    DEFINE VARIABLE lPairs   AS LOGICAL   NO-UNDO INITIAL FALSE.
 
     RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
 
@@ -452,41 +452,44 @@ PROCEDURE Select PRIVATE:
     /* Force focus to the WIDGET so ENTRY and LEAVE events are fired */
     APPLY "ENTRY" TO hElement.
 
-    IF  CAN-QUERY(hElement:HANDLE, "LIST-ITEMS") THEN
-        ASSIGN
-            lPairs  = FALSE
-            cValues = hElement:LIST-ITEMS
-            nItems  = NUM-ENTRIES(cValues).
-    ELSE IF CAN-QUERY(hElement:HANDLE, "RADIO-BUTTONS") THEN
-        ASSIGN
-            lPairs  = TRUE
-            cValues = hElement:RADIO-BUTTONS
-            nItems  = NUM-ENTRIES(cValues).
-    ELSE IF CAN-QUERY(hElement:HANDLE, "LIST-ITEM-PAIRS") THEN 
-        ASSIGN
-            lPairs  = TRUE
-            cValues = hElement:LIST-ITEM-PAIRS
-            nItems  = NUM-ENTRIES(cValues).
-    ELSE
-        ASSIGN
-            lPairs  = FALSE
-            nItems  = 0
-            cValues = "".
-
-    DO  nItem = 1 TO nItems:
-        cItem = TRIM(ENTRY(nItem, cValues)).
-        
-        IF  lPartial AND cItem MATCHES ("*" + cValue + "*") OR cItem = cValue THEN
-        DO:
-            /* Get the value of a "PAIRS" list */
-            IF  lPairs THEN
-                hElement:SCREEN-VALUE = IF nItem MOD 2 = 0 THEN ENTRY(nItem, cValues) ELSE ENTRY(nItem + 1, cValues).
-            ELSE
-                hElement:SCREEN-VALUE = ENTRY(nItem, cValues).
-
-            cOutput = "OK".
-            LEAVE.
+    IF  lPartial THEN
+    DO:
+        IF  CAN-QUERY(hElement:HANDLE, "LIST-ITEMS") THEN
+            ASSIGN
+                lPairs  = FALSE
+                cValues = hElement:LIST-ITEMS
+                nItems  = NUM-ENTRIES(hElement:LIST-ITEMS).
+        ELSE IF CAN-QUERY(hElement:HANDLE, "RADIO-BUTTONS") THEN
+            ASSIGN
+                lPairs  = TRUE
+                cValues = hElement:RADIO-BUTTONS
+                nItems  = NUM-ENTRIES(hElement:RADIO-BUTTONS).
+        ELSE IF CAN-QUERY(hElement:HANDLE, "LIST-ITEM-PAIRS") THEN 
+            ASSIGN
+                lPairs  = TRUE
+                cValues = hElement:LIST-ITEM-PAIRS
+                nItems  = NUM-ENTRIES(hElement:LIST-ITEM-PAIRS).
+    
+        DO  nItem = 1 TO nItems:
+            cItem = ENTRY(nItem, cValues).
+            
+            IF  cItem MATCHES "*" + cValue + "*" THEN
+            DO:
+                /* Get the value of the "PAIRS" list */
+                IF  lPairs THEN
+                    hElement:SCREEN-VALUE = IF nItem MOD 2 = 0 THEN ENTRY(nItem, cValues) ELSE ENTRY(nItem + 1, cValues).
+                ELSE
+                    hElement:SCREEN-VALUE = ENTRY(nItem, cValues).
+    
+                cOutput = "OK".
+                LEAVE.
+            END.
         END.
+    END.
+    ELSE
+    DO:
+        hElement:SCREEN-VALUE = cValue NO-ERROR.
+        cOutput = IF ERROR-STATUS:ERROR THEN ? ELSE "OK".
     END.
     
     IF  cOutput = ? OR cOutput = "" THEN
