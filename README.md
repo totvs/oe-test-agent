@@ -24,13 +24,13 @@ npm i oe-test-agent
 
 ## Changelog
 
-### **1.1.11**
+### **1.1.12**
 
-- Solved a bug when using `select` to an value of a combo-box with list-item-pairs.
+- Solved a bug when using `select` to a value of a `COMBO-BOX` with `LIST-ITEM-PAIRS`.
 
 ### **1.1.7**
 
-- Solved a bug when using `select` to an value of a radio-set widget.
+- Solved a bug when using `select` to a value of a `RADIO-SET` widget.
 
 ### **1.1.6**
 

@@ -39,16 +39,16 @@ DEFINE FRAME hFrame
 IF  SESSION:DISPLAY-TYPE = "GUI":U THEN
     CREATE WINDOW hWindow
         ASSIGN
-            HIDDEN       = TRUE
-            TITLE        = "OE TEST AGENT"
-            HEIGHT       = 01
-            WIDTH        = 60
-            RESIZE       = FALSE
-            SCROLL-BARS  = FALSE
-            STATUS-AREA  = FALSE
-            THREE-D      = TRUE
-            MESSAGE-AREA = FALSE
-            SENSITIVE    = TRUE.
+        HIDDEN       = TRUE
+        TITLE        = "OE TEST AGENT"
+        HEIGHT       = 01
+        WIDTH        = 60
+        RESIZE       = FALSE
+        SCROLL-BARS  = FALSE
+        STATUS-AREA  = FALSE
+        THREE-D      = TRUE
+        MESSAGE-AREA = FALSE
+        SENSITIVE    = TRUE.
 ELSE
     hWindow = CURRENT-WINDOW.
 
@@ -427,8 +427,10 @@ PROCEDURE Select PRIVATE:
 
     DEFINE VARIABLE hElement AS HANDLE    NO-UNDO.
     DEFINE VARIABLE nItem    AS INTEGER   NO-UNDO.
+    DEFINE VARIABLE cItem    AS CHARACTER NO-UNDO.
     DEFINE VARIABLE nItems   AS INTEGER   NO-UNDO.
     DEFINE VARIABLE cValues  AS CHARACTER NO-UNDO.
+    DEFINE VARIABLE lPairs   AS LOGICAL   NO-UNDO.
 
     RUN GetElementHandle(INPUT cElement, OUTPUT hElement, OUTPUT cOutput).
 
@@ -450,35 +452,50 @@ PROCEDURE Select PRIVATE:
     /* Force focus to the WIDGET so ENTRY and LEAVE events are fired */
     APPLY "ENTRY" TO hElement.
 
-    IF CAN-QUERY(hElement:HANDLE, "LIST-ITEMS") THEN
-        ASSIGN nItems  = NUM-ENTRIES(hElement:LIST-ITEMS)
-               cValues = hElement:LIST-ITEMS.
+    IF  CAN-QUERY(hElement:HANDLE, "LIST-ITEMS") THEN
+        ASSIGN
+            lPairs  = FALSE
+            cValues = hElement:LIST-ITEMS
+            nItems  = NUM-ENTRIES(cValues).
     ELSE IF CAN-QUERY(hElement:HANDLE, "RADIO-BUTTONS") THEN
-        ASSIGN nItems  = NUM-ENTRIES(hElement:RADIO-BUTTONS)
-               cValues = hElement:RADIO-BUTTONS.
-    ELSE IF CAN-QUERY(hElement:HANDLE, "LIST-ITEM-PAIRS") THEN
-        ASSIGN nItems  = NUM-ENTRIES(hElement:LIST-ITEM-PAIRS)
-               cValues = hElement:LIST-ITEM-PAIRS.
+        ASSIGN
+            lPairs  = TRUE
+            cValues = hElement:RADIO-BUTTONS
+            nItems  = NUM-ENTRIES(cValues).
+    ELSE IF CAN-QUERY(hElement:HANDLE, "LIST-ITEM-PAIRS") THEN 
+        ASSIGN
+            lPairs  = TRUE
+            cValues = hElement:LIST-ITEM-PAIRS
+            nItems  = NUM-ENTRIES(cValues).
     ELSE
-        ASSIGN nItems  = 0
-               cValues = "".
+        ASSIGN
+            lPairs  = FALSE
+            nItems  = 0
+            cValues = "".
 
     DO  nItem = 1 TO nItems:
-        IF lPartial AND ENTRY(nItem, cValues) MATCHES ("*" + cValue + "*")
-        OR ENTRY(nItem, cValues) = cValue THEN
+        cItem = TRIM(ENTRY(nItem, cValues)).
+        
+        IF  lPartial AND cItem MATCHES ("*" + cValue + "*") OR cItem = cValue THEN
         DO:
-            hElement:SCREEN-VALUE = ENTRY(nItem, cValues).
+            /* Get the value of a "PAIRS" list */
+            IF  lPairs THEN
+                hElement:SCREEN-VALUE = IF nItem MOD 2 = 0 THEN ENTRY(nItem, cValues) ELSE ENTRY(nItem + 1, cValues).
+            ELSE
+                hElement:SCREEN-VALUE = ENTRY(nItem, cValues).
+
             cOutput = "OK".
             LEAVE.
         END.
     END.
-
-    IF cOutput = ? OR cOutput = "" THEN
+    
+    IF  cOutput = ? OR cOutput = "" THEN
         cOutput = "NOK|Element ~"" + hElement:NAME + "~" doesn't have an item with value ~"" + cValue + "~".".
     ELSE
         cOutput = "OK".
-
-    APPLY "VALUE-CHANGED" TO hElement.
+    
+    IF  cOutput = "OK" THEN
+        APPLY "VALUE-CHANGED" TO hElement.
 END PROCEDURE.
 
 /*------------------------------------------------------------------------------

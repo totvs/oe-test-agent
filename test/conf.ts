@@ -1,12 +1,12 @@
-import { Config } from 'protractor';
+import { Config } from "protractor";
 
-const propath = `${__dirname.replace(/\\/g, '/')}/abl`;
+const propath = `${__dirname.replace(/\\/g, "/")}/abl`;
 
 export const config: Config = {
   capabilities: {
-    browserName: 'chrome',
+    browserName: "chrome",
     chromeOptions: {
-      args: ['--headless', '--disable-gpu']
+      args: ["--headless", "--disable-gpu"]
     }
   },
 
@@ -14,19 +14,16 @@ export const config: Config = {
 
   params: {
     oeConfig: {
-      host: 'localhost',
+      host: "localhost",
       port: 2091,
-      dlcHome: 'C:/dlc117',
-      outDir: 'C:/tmp',
+      dlcHome: "C:/dlc117",
+      outDir: "C:/tmp",
       propath: [propath]
     }
   },
 
   suites: {
-    oeRobot: [
-      'alertboxes.spec.js',
-      'screenshot.spec.js',
-      'systemdialog.spec.js'
-    ]
+    oeRobot: [ "alertboxes.spec.js", "screenshot.spec.js", "systemdialog.spec.js" ],
+    widgets: ["widgets.spec.js"]
   }
 };
